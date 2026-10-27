@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>大茗點餐單</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap">
+<style>
+body{margin:0}
+
+/* 版面：單欄手機優先。品牌區 → 點餐人與搜尋 → 黏性分類列 → 各分類品項；底部固定訂單列，點開從下方滑出。配色取自菜單本身的橄欖綠墨色與暗紅標記。 */
+:root{
+  --bg:#f4f5ef; --surface:#ffffff; --ink:#2b3526; --muted:#667061; --line:#d8dccd; --tint:#e6eadb;
+  --accent:#3d4b33; --on-accent:#f4f5ef; --red:#8e2b2b; --on-red:#ffffff;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --num:"Barlow Condensed","Noto Sans TC","PingFang TC",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#161a13; --surface:#1f251b; --ink:#e7ebdc; --muted:#9ba68f; --line:#333c2d; --tint:#272f21;
+    --accent:#b9d19a; --on-accent:#18200f; --red:#e59383; --on-red:#2a0f0b; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161a13; --surface:#1f251b; --ink:#e7ebdc; --muted:#9ba68f; --line:#333c2d; --tint:#272f21;
+  --accent:#b9d19a; --on-accent:#18200f; --red:#e59383; --on-red:#2a0f0b; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background:var(--bg); color:var(--ink); font:400 15px/1.5 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:8px; padding-bottom:128px;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto}
+
+.brand{padding:20px 0 6px}
+.eyebrow{font:600 12px var(--num);letter-spacing:.16em;color:var(--muted)}
+h1{font:900 34px/1.15 var(--serif);letter-spacing:.06em;margin:8px 0 4px;text-wrap:balance}
+.sub{font:500 13px var(--num);letter-spacing:.1em;color:var(--muted)}
+.tools{display:grid;gap:10px;margin:16px 0 4px}
+.field{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 12px}
+.field:focus-within{border-color:var(--accent)}
+.field label{font-weight:700;font-size:13px;color:var(--muted);white-space:nowrap}
+.field input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:16px;padding:12px 0;outline:0}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line);margin-top:12px}
+.navin{display:flex;gap:8px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
+.navin::-webkit-scrollbar{display:none}
+.navin button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+.navin button.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+section.cat{scroll-margin-top:calc(58px + env(safe-area-inset-top,0px));padding-top:26px}
+.cat-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.cat-h h2{font:900 24px/1.2 var(--serif);letter-spacing:.08em;margin:0}
+.sz{font:700 16px var(--serif);color:var(--muted)}
+.desc{font-size:13px;color:var(--muted);margin:6px 0 2px}
+ul{list-style:none;margin:0;padding:0}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:13px 0;cursor:pointer}
+.item:active{background:var(--tint)}
+.zh{font-weight:700;font-size:16px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.en{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
+.note{display:block;font-size:12.5px;color:var(--red);font-weight:500}
+.price{font:600 22px var(--num);font-variant-numeric:tabular-nums}
+.price small{font:500 12px var(--sans);color:var(--muted);margin-left:2px}
+.plus{width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-size:22px;line-height:1}
+.tg{font:600 11px/1 var(--sans);padding:3px 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tg.pop{color:var(--accent);border-color:var(--accent)}
+.tg.red{background:var(--red);color:var(--on-red);border-color:var(--red)}
+.empty{color:var(--muted);padding:28px 0;text-align:center}
+.legend{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);display:grid;gap:4px}
+
+.ov{position:fixed;inset:0;background:rgba(10,14,8,.5);z-index:30}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:640px;max-height:88vh;max-height:88dvh;display:flex;flex-direction:column;background:var(--surface);border-radius:18px 18px 0 0;z-index:31;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+.sh-head,.sh-body,.sh-foot{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sh-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-top:16px;padding-bottom:8px}
+.sh-t{font:900 22px/1.25 var(--serif);letter-spacing:.04em}
+.x{flex:none;width:36px;height:36px;border:0;border-radius:50%;background:var(--tint);font-size:22px;line-height:1;cursor:pointer}
+.sh-body{overflow-y:auto;padding-bottom:12px}
+.sh-foot{display:flex;gap:12px;align-items:center;padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.grp{margin-top:16px}
+.grp h3{font:700 13px var(--sans);letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{border:1px solid var(--line);background:var(--bg);font-size:14px;font-weight:500;padding:8px 13px;border-radius:999px;cursor:pointer}
+.opt[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.fine{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.step{display:flex;align-items:center;border:1px solid var(--line);border-radius:999px;flex:none}
+.step button{width:38px;height:38px;border:0;background:none;font-size:20px;cursor:pointer}
+.step span{min-width:26px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.primary{flex:1;min-width:0;border:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px;padding:13px 16px;border-radius:12px;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
+.primary .n{font:600 20px/1.2 var(--num);font-variant-numeric:tabular-nums}
+.ghost{flex:none;border:0;background:none;color:var(--muted);font-size:14px;padding:10px 4px;cursor:pointer;text-decoration:underline}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:linear-gradient(to top,var(--bg) 65%,transparent)}
+.bar .primary{display:flex;max-width:640px;margin:0 auto;width:100%;box-shadow:0 4px 16px rgba(0,0,0,.22)}
+
+.person{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);margin-top:18px;padding-bottom:4px}
+.person b{font:900 17px var(--serif);letter-spacing:.04em}
+.person span{font:600 18px var(--num)}
+.ln{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.ln .d{min-width:0;font-weight:500}
+.ln small{display:block;font:500 13px var(--num);color:var(--muted)}
+.seg{display:flex;gap:8px;margin-top:20px}
+textarea{display:block;width:100%;margin-top:10px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:14px/1.7 var(--sans);resize:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(88px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:14px;font-weight:500;z-index:40;max-width:calc(100% - 32px);text-align:center}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.4}}}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header class="brand">
+    <div class="eyebrow">DAMING MENU · SINCE 1994 · 北部菜單</div>
+    <h1>大茗本位製茶堂</h1>
+    <div class="sub">PRO CHING CHA SHOP from TAIWAN</div>
+  </header>
+  <div class="tools">
+    <div class="field"><label for="who">點餐人</label><input id="who" maxlength="12" placeholder="輸入名字，例如：小明" autocomplete="off"></div>
+    <p class="hint">每個人先輸入自己的名字再點，訂單會分開列出，最後一起複製給買的人。</p>
+    <div class="field"><label for="q">搜尋</label><input id="q" type="search" placeholder="例如：奶蓋、冬瓜、拿鐵" autocomplete="off"></div>
+  </div>
+  <nav class="nav" aria-label="分類"><div class="navin" id="nav"></div></nav>
+  <main id="menu"></main>
+  <footer class="legend">
+    <div>人氣推薦／含鮮奶／僅冷飲，標示依菜單。熱飲僅提供中杯（600ml），價格以現場為準。</div>
+    <div>無咖啡因飲品請詢問店員。價格依北部菜單整理，實際以店內為準。</div>
+  </footer>
+</div>
+
+<div class="bar" id="bar" hidden><button class="primary" data-act="cart"><span id="barL">查看訂單</span><span class="n" id="barR"></span></button></div>
+<div class="ov" id="ov" hidden data-act="close"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" tabindex="-1" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(s){return document.querySelector(s)};
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+var SUGARS=['正常','少糖','半糖','微糖','1分糖','無糖'];
+var ICES=['正常冰','微冰','去冰','完全去冰'];
+var TOPS=[
+  {id:'pearl',name:'波霸珍珠',p:10},{id:'grass',name:'嫩仙草',p:10},{id:'buck',name:'烤糖蕎麥凍',p:15},
+  {id:'avo',name:'酪梨奶蓋',p:30},{id:'coffee',name:'珈琲粉粿',p:15}
+];
+/* t: p 人氣推薦, m 含鮮奶, c 僅冷飲, n NEW, s 季節限定 */
+var CATS=[
+ {id:'c1',name:'嚴選茗品',size:'L',desc:'高山茶種才有的輕盈茶感，尾韻細長，持久回甘。',items:[
+  {id:'a1',zh:'玉露青茶',en:'Taiwanese Ching Tea',p:40,t:'p'},
+  {id:'a2',zh:'桂花青茶',en:'Osmanthus Ching Tea',p:40,t:'p'},
+  {id:'a3',zh:'炭燒青茶',en:'Oolong Tea',p:40,t:''}]},
+ {id:'c2',name:'牧場直送',size:'M / L',desc:'經典茶底搭配濃郁好農鮮奶，令人愛不釋口的香醇比例。',items:[
+  {id:'b1',zh:'紅茶拿鐵',en:'Black Tea Latte',p:70,t:'pm'},
+  {id:'b2',zh:'翡翠拿鐵',en:'Jasmine Green Tea Latte',p:70,t:'m'},
+  {id:'b3',zh:'鐵觀音拿鐵',en:'Oolong Tea Latte',p:70,t:'m'},
+  {id:'b4',zh:'仙草嫩奶',en:'Grass Jelly Milk',p:70,t:'pmc',note:'3%奶精 味蕾升華（含奶精）'},
+  {id:'b5',zh:'珍珠粉粿牛奶(珈琲粉粿)',en:'Pearl Milk with Coffee Jelly',p:70,t:'nmc',size:'M'}]},
+ {id:'c3',name:'雲朵奶蓋',size:'L',desc:'濃郁酪梨奶蓋佐純粹茶品，成就層次分明的順口奶蓋茶。',items:[
+  {id:'d1',zh:'酪梨奶蓋紅玉',en:'Taiwanese Black Tea With Avocado Milk Foam',p:69,t:'pc'},
+  {id:'d2',zh:'酪梨奶蓋綠茶',en:'Taiwanese Jasmine Green Tea With Avocado Milk Foam',p:69,t:'c'},
+  {id:'d3',zh:'酪梨奶蓋烏龍',en:'Oolong Tea With Avocado Milk Foam',p:69,t:'pc'},
+  {id:'d4',zh:'酪梨奶蓋冬瓜露',en:'Winter Melon Drink With Avocado Milk Foam',p:69,t:'c'}]},
+ {id:'c4',name:'經典純粹',size:'L',desc:'嚴選茶葉沖泡，茶感圓潤，濃郁。',items:[
+  {id:'e1',zh:'翡翠綠茶',en:'Jasmine Green Tea',p:40,t:''},
+  {id:'e2',zh:'紅玉紅茶',en:'Taiwanese Black Tea',p:40,t:'p'},
+  {id:'e3',zh:'御品冬瓜露',en:'Winter Melon Drink',p:40,t:''},
+  {id:'e4',zh:'熟成油切蕎麥',en:'Buckwheat Tea',p:40,t:'p',sugar:'none',note:'限無糖'},
+  {id:'e5',zh:'冷萃東方美人',en:'Cold Brew Oriental Beauty Tea',p:55,t:'',noHot:true},
+  {id:'e6',zh:'冷萃半熟金萱',en:'Cold Brew Jin Xuan Tea',p:55,t:'',noHot:true}]},
+ {id:'c5',name:'香醇濃郁',size:'L',desc:'順滑柔順的兒時奶茶滋味，找回熟悉的復刻味道。',items:[
+  {id:'f1',zh:'玉露奶青／桂花奶青',en:'Taiwanese Ching Milk Tea / Osmanthus Ching Milk Tea',p:60,t:'pm',variants:[{n:'玉露奶青',p:60},{n:'桂花奶青',p:60}]},
+  {id:'f2',zh:'懷舊經典奶茶／翡翠奶綠／鐵觀音奶茶',en:'Taiwanese Milk Tea (Black Tea / Green Tea / Oolong Tea)',p:55,t:'',variants:[{n:'懷舊經典奶茶',p:55},{n:'翡翠奶綠',p:55},{n:'鐵觀音奶茶',p:55}]},
+  {id:'f3',zh:'熟成蕎麥奶茶',en:'Buckwheat Milk Tea',p:60,t:''},
+  {id:'f4',zh:'珍珠奶茶',en:'Bubble Milk Tea',p:60,t:''},
+  {id:'f5',zh:'烤糖蕎麥凍奶青',en:'Buckwheat Jelly Taiwanese Ching Milk Tea',p:69,t:'pmc'},
+  {id:'f6',zh:'珈琲粉粿蕎麥奶',en:'Coffee Jelly with Buckwheat Milk Tea',p:69,t:'nc'}]},
+ {id:'c6',name:'職人手作',size:'L',desc:'高山青茶搭配四季精選水果，繽紛清爽的特調飲品。',items:[
+  {id:'g1',zh:'蘋果玉露青',en:'Apple Taiwanese Ching Tea',p:69,t:'pc',sugar:'min1',note:'最低甜度 1 分糖'},
+  {id:'g2',zh:'老奶奶的鳳梨田',en:'Pineapple Juice Taiwanese Ching Tea',p:69,t:'p',note:'本產品含有堅果類'},
+  {id:'g3',zh:'甘蔗玉露青',en:'Sugar Cane Taiwanese Ching Tea',p:65,t:''},
+  {id:'g4',zh:'冬瓜玉露青',en:'Winter Melon Taiwanese Ching Tea',p:45,t:''},
+  {id:'g5',zh:'纖檸冬瓜露',en:'Lemon Winter Melon Drink',p:55,t:'c'},
+  {id:'g6',zh:'翡翠多多青',en:'Yakult Jasmine Green Tea',p:60,t:'c'},
+  {id:'g7',zh:'檸檬桂花青',en:'Lemon Osmanthus Ching Tea',p:65,t:'pc',sugar:'min1',note:'最低甜度 1 分糖'},
+  {id:'g8',zh:'百香翡翠青',en:'Passion Jasmine Green Tea',p:65,t:'c'},
+  {id:'g9',zh:'柳橙翡翠青',en:'Orange Jasmine Green Tea',p:70,t:'sc',sugar:'min1',note:'最低甜度 1 分糖'}]},
+ {id:'c7',name:'匠人茶點',size:'',desc:'午後時光必吃，細細品味生活的甜。',items:[
+  {id:'h1',zh:'酪梨奶蓋泡芙',en:'Avocado Milk Foam Puff',p:85,t:'p',portions:[{n:'2入',p:85},{n:'4入',p:170},{n:'6入',p:255}]},
+  {id:'h2',zh:'花生奶蓋泡芙',en:'Peanut Milk Foam Puff',p:85,t:'',portions:[{n:'2入',p:85},{n:'4入',p:170},{n:'6入',p:255}]}]}
+];
+var ITEM={};
+CATS.forEach(function(c){c.items.forEach(function(i){i.cat=c.id;ITEM[i.id]=i})});
+
+var cart=[];
+try{cart=JSON.parse(store.get('daming-cart')||'[]')}catch(e){cart=[]}
+if(!Array.isArray(cart))cart=[];
+cart=cart.filter(function(l){return l&&ITEM[l.itemId]&&l.qty>0});
+function save(){store.set('daming-cart',JSON.stringify(cart))}
+var who=$('#who');
+who.value=store.get('daming-name')||'';
+who.addEventListener('input',function(){store.set('daming-name',who.value.trim())});
+
+/* ---- 菜單 ---- */
+var TAGS={p:['人氣推薦','pop'],m:['含鮮奶',''],c:['僅冷飲',''],n:['NEW','red'],s:['季節限定','red']};
+function tagHtml(it){return it.t.split('').map(function(k){return '<span class="tg '+TAGS[k][1]+'">'+TAGS[k][0]+'</span>'}).join('')}
+function rowHtml(it){
+  return '<li><button class="item" data-act="open" data-id="'+it.id+'"><span><span class="zh">'+esc(it.zh)+tagHtml(it)+'</span><span class="en">'+esc(it.en)+'</span>'+(it.note?'<span class="note">'+esc(it.note)+'</span>':'')+'</span><span class="price">'+it.p+(it.portions?'<small>/2入起</small>':'')+'</span><span class="plus" aria-hidden="true">+</span></button></li>';
+}
+function renderMenu(){
+  var q=$('#q').value.trim().toLowerCase(),html='';
+  CATS.forEach(function(c){
+    var its=c.items.filter(function(i){return !q||(i.zh+i.en+(i.variants||[]).map(function(v){return v.n}).join('')).toLowerCase().indexOf(q)>-1});
+    if(!its.length)return;
+    html+='<section class="cat" id="'+c.id+'"><div class="cat-h"><h2>'+c.name+'</h2>'+(c.size?'<span class="sz">'+c.size+'</span>':'')+'</div><p class="desc">'+c.desc+'</p><ul>'+its.map(rowHtml).join('')+'</ul></section>';
+  });
+  $('#menu').innerHTML=html||'<p class="empty">找不到符合的品項</p>';
+  spy(true);
+}
+$('#nav').innerHTML=CATS.map(function(c){return '<button data-go="'+c.id+'">'+c.name+'</button>'}).join('');
+$('#q').addEventListener('input',renderMenu);
+var reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+var lastCur=null,tick=false;
+function spy(force){
+  var cur=null;
+  document.querySelectorAll('section.cat').forEach(function(s){if(s.getBoundingClientRect().top<=140)cur=s.id});
+  if(!cur){var f=document.querySelector('section.cat');cur=f?f.id:null}
+  if(cur===lastCur&&!force)return;
+  lastCur=cur;
+  var nav=$('#nav');
+  nav.querySelectorAll('button').forEach(function(b){
+    var on=b.dataset.go===cur;b.classList.toggle('on',on);
+    if(on)nav.scrollLeft=b.offsetLeft-(nav.clientWidth-b.offsetWidth)/2;
+  });
+}
+window.addEventListener('scroll',function(){if(tick)return;tick=true;requestAnimationFrame(function(){tick=false;spy()})},{passive:true});
+
+/* ---- 訂單計算 ---- */
+function nameOf(l){return l.variant||ITEM[l.itemId].zh}
+function desc(l){
+  var it=ITEM[l.itemId];
+  if(it.portions)return nameOf(l)+'／'+l.portion;
+  var p=[nameOf(l)];
+  if(l.hot){p.push('熱飲（中杯）')}else{p.push(it.size||'L');p.push(l.ice)}
+  p.push(l.sugar);
+  if(l.tops.length)p.push('加'+l.tops.map(function(id){return TOPS.filter(function(t){return t.id===id})[0].name}).join('、'));
+  return p.join('／');
+}
+function totals(){var n=0,t=0;cart.forEach(function(l){n+=l.qty;t+=l.unit*l.qty});return{n:n,t:t}}
+function groups(){
+  var gs=[],idx={};
+  cart.forEach(function(l){
+    if(!(l.person in idx)){idx[l.person]=gs.length;gs.push({name:l.person,lines:[],sub:0})}
+    var g=gs[idx[l.person]];g.lines.push(l);g.sub+=l.unit*l.qty;
+  });
+  return gs;
+}
+var HEAD='【大茗本位製茶堂 訂單】';
+function textByPerson(){
+  var o=[HEAD],tt=totals();
+  groups().forEach(function(g){
+    o.push('■ '+g.name);
+    g.lines.forEach(function(l){o.push('・'+desc(l)+' ×'+l.qty+'　$'+l.unit*l.qty)});
+    o.push('　小計 $'+g.sub);
+  });
+  o.push('共 '+tt.n+' 項，合計 $'+tt.t);
+  return o.join('\n');
+}
+function textMerged(){
+  var m={},order=[],tt=totals();
+  cart.forEach(function(l){
+    var k=desc(l);
+    if(!m[k]){m[k]={q:0,who:{},order:[]};order.push(k)}
+    m[k].q+=l.qty;
+    if(!(l.person in m[k].who)){m[k].who[l.person]=0;m[k].order.push(l.person)}
+    m[k].who[l.person]+=l.qty;
+  });
+  var o=[HEAD];
+  order.forEach(function(k,i){
+    var e=m[k];
+    o.push((i+1)+'. '+k+' ×'+e.q+'（'+e.order.map(function(p){return e.who[p]>1?p+'×'+e.who[p]:p}).join('、')+'）');
+  });
+  o.push('共 '+tt.n+' 項，合計 $'+tt.t);
+  return o.join('\n');
+}
+
+/* ---- 彈出面板 ---- */
+var S={mode:null,fmt:'person',confirmClear:false};
+var toastT=null;
+function toast(msg){
+  var t=$('#toast');t.textContent=msg;t.hidden=false;
+  clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},2200);
+}
+function opt(label,on,attrs,dis){return '<button class="opt" aria-pressed="'+(on?'true':'false')+'" '+attrs+(dis?' disabled':'')+'>'+esc(label)+'</button>'}
+function grp(title,inner){return '<div class="grp"><h3>'+title+'</h3><div class="opts">'+inner.join('')+'</div></div>'}
+function sugarOpts(it){return it.sugar==='none'?['無糖']:it.sugar==='min1'?SUGARS.slice(0,5):SUGARS}
+function unitPrice(){
+  var it=S.it,base=it.portions?it.portions[S.pi].p:it.variants?it.variants[S.v].p:it.p;
+  if(!it.portions)S.tops.forEach(function(id){base+=TOPS.filter(function(t){return t.id===id})[0].p});
+  return base;
+}
+function openItem(id){
+  var it=ITEM[id];
+  S={mode:'item',it:it,v:0,pi:0,hot:false,ice:'正常冰',sugar:it.sugar==='none'?'無糖':'正常',tops:[],qty:1};
+  show();
+}
+function itemSheet(){
+  var it=S.it,hotOk=it.t.indexOf('c')<0&&!it.noHot;
+  var h='<div class="sh-head"><div><div class="sh-t">'+esc(it.zh)+'</div><span class="en">'+esc(it.en)+'</span>'+(it.note?'<span class="note">'+esc(it.note)+'</span>':'')+'</div><button class="x" data-act="close" aria-label="關閉">×</button></div><div class="sh-body">';
+  if(it.variants)h+=grp('口味',it.variants.map(function(v,i){return opt(v.n,S.v===i,'data-act="v" data-i="'+i+'"')}));
+  if(it.portions){
+    h+=grp('份量',it.portions.map(function(v,i){return opt(v.n+'　$'+v.p,S.pi===i,'data-act="pt" data-i="'+i+'"')}));
+  }else{
+    var temps=ICES.map(function(x){return opt(x,!S.hot&&S.ice===x,'data-act="ice" data-v="'+x+'"')});
+    if(hotOk)temps.push(opt('熱飲（中杯 600ml）',S.hot,'data-act="hot"'));
+    h+=grp('冰量',temps);
+    h+=grp('甜度',sugarOpts(it).map(function(x){return opt(x,S.sugar===x,'data-act="sg" data-v="'+x+'"')}));
+    h+=grp('加料',TOPS.map(function(t){return opt(t.name+' +$'+t.p,S.tops.indexOf(t.id)>-1,'data-act="tp" data-v="'+t.id+'"')}));
+    if(S.hot)h+='<p class="fine">熱飲僅提供中杯，價格以現場為準。</p>';
+  }
+  h+='</div><div class="sh-foot"><div class="step"><button data-act="qm" aria-label="減少">−</button><span>'+S.qty+'</span><button data-act="qp" aria-label="增加">+</button></div><button class="primary" data-act="add"><span>加入訂單</span><span class="n">$'+unitPrice()*S.qty+'</span></button></div>';
+  return h;
+}
+function addToCart(){
+  var it=S.it,person=who.value.trim()||'我';
+  var l={itemId:it.id,person:person,qty:S.qty,unit:unitPrice(),hot:false,ice:'',sugar:'',tops:[],variant:'',portion:''};
+  if(it.portions)l.portion=it.portions[S.pi].n;
+  else{l.hot=S.hot;l.ice=S.hot?'':S.ice;l.sugar=S.sugar;l.tops=S.tops.slice().sort()}
+  if(it.variants)l.variant=it.variants[S.v].n;
+  l.k=[l.itemId,l.variant,l.hot,l.ice,l.sugar,l.tops.join('+'),l.portion,l.person].join('|');
+  var ex=cart.filter(function(x){return x.k===l.k})[0];
+  if(ex)ex.qty+=l.qty;else cart.push(l);
+  save();hide();bar();
+  toast('已加入：'+nameOf(l)+(l.qty>1?' ×'+l.qty:''));
+}
+function cartSheet(){
+  var tt=totals(),h='<div class="sh-head"><div class="sh-t">我的訂單</div><button class="x" data-act="close" aria-label="關閉">×</button></div><div class="sh-body">';
+  if(!cart.length){h+='<p class="empty">還沒有品項，回到菜單點選飲料。</p></div>';return h}
+  groups().forEach(function(g){
+    h+='<div class="person"><b>'+esc(g.name)+'</b><span>$'+g.sub+'</span></div>';
+    g.lines.forEach(function(l){
+      h+='<div class="ln"><div class="d">'+esc(desc(l))+'<small>$'+l.unit+' × '+l.qty+' = $'+l.unit*l.qty+'</small></div><div class="step"><button data-act="dec" data-k="'+esc(l.k)+'" aria-label="減少">−</button><span>'+l.qty+'</span><button data-act="inc" data-k="'+esc(l.k)+'" aria-label="增加">+</button></div></div>';
+    });
+  });
+  var txt=S.fmt==='person'?textByPerson():textMerged();
+  h+='<div class="seg">'+opt('依人分組',S.fmt==='person','data-act="fmt" data-v="person"')+opt('合併杯數（給店員）',S.fmt==='merged','data-act="fmt" data-v="merged"')+'</div>';
+  h+='<textarea id="txt" readonly rows="'+Math.min(14,txt.split('\n').length+1)+'" aria-label="訂單文字">'+esc(txt)+'</textarea></div>';
+  h+='<div class="sh-foot"><button class="ghost" data-act="clear">'+(S.confirmClear?'再按一次清空':'清空')+'</button><button class="primary" data-act="copy"><span>複製訂單</span><span class="n">共 '+tt.n+' 項 $'+tt.t+'</span></button></div>';
+  return h;
+}
+function paint(){
+  var sh=$('#sheet'),st=sh.querySelector('.sh-body'),top=st?st.scrollTop:0;
+  sh.innerHTML=S.mode==='item'?itemSheet():cartSheet();
+  var nb=sh.querySelector('.sh-body');if(nb)nb.scrollTop=top;
+}
+function show(){
+  $('#ov').hidden=false;$('#sheet').hidden=false;
+  document.documentElement.style.overflow='hidden';
+  paint();$('#sheet').scrollTop=0;
+  var b=$('#sheet .sh-body');if(b)b.scrollTop=0;
+  $('#sheet').focus({preventScroll:true});
+}
+function hide(){
+  $('#ov').hidden=true;$('#sheet').hidden=true;
+  document.documentElement.style.overflow='';
+  S.mode=null;S.confirmClear=false;
+}
+function bar(){
+  var tt=totals();
+  $('#bar').hidden=!tt.n;
+  $('#barL').textContent='查看訂單・'+tt.n+' 項';
+  $('#barR').textContent='$'+tt.t;
+}
+function copyText(){
+  var ta=$('#txt');if(!ta)return;
+  var done=function(){toast('已複製，貼到 LINE 就能用')};
+  var fallback=function(){ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);toast('已選取文字，請長按後選擇拷貝')};
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,fallback)}else fallback();
+  }catch(e){fallback()}
+}
+function findLine(k){return cart.filter(function(l){return l.k===k})[0]}
+
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-act]');
+  if(!el)return;
+  var a=el.dataset.act,d=el.dataset;
+  if(a==='open'){openItem(d.id);return}
+  if(a==='cart'){S={mode:'cart',fmt:S.fmt||'person',confirmClear:false};show();return}
+  if(a==='close'){hide();return}
+  if(a==='v')S.v=+d.i;
+  else if(a==='pt')S.pi=+d.i;
+  else if(a==='ice'){S.ice=d.v;S.hot=false}
+  else if(a==='hot')S.hot=true;
+  else if(a==='sg')S.sugar=d.v;
+  else if(a==='tp'){var i=S.tops.indexOf(d.v);if(i>-1)S.tops.splice(i,1);else S.tops.push(d.v)}
+  else if(a==='qm')S.qty=Math.max(1,S.qty-1);
+  else if(a==='qp')S.qty=Math.min(20,S.qty+1);
+  else if(a==='add'){addToCart();return}
+  else if(a==='fmt')S.fmt=d.v;
+  else if(a==='inc'){var l=findLine(d.k);if(l){l.qty=Math.min(99,l.qty+1);save()}}
+  else if(a==='dec'){var l2=findLine(d.k);if(l2){l2.qty--;if(l2.qty<=0)cart=cart.filter(function(x){return x!==l2});save()}}
+  else if(a==='copy'){copyText();return}
+  else if(a==='clear'){
+    if(S.confirmClear){cart=[];save();hide();bar();toast('訂單已清空');return}
+    S.confirmClear=true;paint();
+    setTimeout(function(){if(S.mode==='cart'&&S.confirmClear){S.confirmClear=false;paint()}},3000);
+    return;
+  }
+  if(S.mode==='cart'&&!cart.length){bar();paint();return}
+  paint();bar();
+});
+$('#nav').addEventListener('click',function(e){
+  var b=e.target.closest('[data-go]');if(!b)return;
+  var s=document.getElementById(b.dataset.go);
+  if(s)s.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&S.mode)hide()});
+
+renderMenu();bar();
+})();
+</script>
+</body></html>
