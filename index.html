@@ -106,6 +106,17 @@ ul{list-style:none;margin:0;padding:0}
 .seg{display:flex;gap:8px;margin-top:20px}
 textarea{display:block;width:100%;margin-top:10px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:14px/1.7 var(--sans);resize:none}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(88px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:14px;font-weight:500;z-index:40;max-width:calc(100% - 32px);text-align:center}
+.sec{flex:none;border:1px solid var(--line);background:var(--bg);font-weight:700;font-size:14px;padding:12px 14px;border-radius:12px;cursor:pointer}
+.sec:disabled,.primary:disabled{opacity:.6;cursor:default}
+.adm-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:22px 0 6px;border-bottom:2px solid var(--ink);margin-bottom:14px}
+.adm-h h2{font:900 24px/1.2 var(--serif);letter-spacing:.08em;margin:0}
+.adm-h a{color:var(--muted);font-size:14px}
+.stats{display:flex;gap:28px;padding:14px 0 6px}
+.stats b{display:block;font:600 34px/1 var(--num);font-variant-numeric:tabular-nums}
+.stats span{font-size:12.5px;color:var(--muted)}
+.adm-act{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px}
+.bt{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px}
+.legend a{color:inherit}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.4}}}
 </style>
 </head><body>
@@ -116,9 +127,10 @@ textarea{display:block;width:100%;margin-top:10px;background:var(--bg);color:var
     <h1>大茗本位製茶堂</h1>
     <div class="sub">PRO CHING CHA SHOP from TAIWAN</div>
   </header>
+  <div id="front">
   <div class="tools">
     <div class="field"><label for="who">點餐人</label><input id="who" maxlength="12" placeholder="輸入名字，例如：小明" autocomplete="off"></div>
-    <p class="hint">每個人先輸入自己的名字再點，訂單會分開列出，最後一起複製給買的人。</p>
+    <p class="hint" id="hint">每個人先輸入自己的名字再點，訂單會分開列出，最後一起複製給買的人。</p>
     <div class="field"><label for="q">搜尋</label><input id="q" type="search" placeholder="例如：奶蓋、冬瓜、拿鐵" autocomplete="off"></div>
   </div>
   <nav class="nav" aria-label="分類"><div class="navin" id="nav"></div></nav>
@@ -126,7 +138,10 @@ textarea{display:block;width:100%;margin-top:10px;background:var(--bg);color:var
   <footer class="legend">
     <div>人氣推薦／含鮮奶／僅冷飲，標示依菜單。熱飲僅提供中杯（600ml），價格以現場為準。</div>
     <div>無咖啡因飲品請詢問店員。價格依北部菜單整理，實際以店內為準。</div>
+    <div><a href="#admin">主揪後台</a></div>
   </footer>
+  </div>
+  <div id="admin" hidden></div>
 </div>
 
 <div class="bar" id="bar" hidden><button class="primary" data-act="cart"><span id="barL">查看訂單</span><span class="n" id="barR"></span></button></div>
@@ -135,12 +150,17 @@ textarea{display:block;width:100%;margin-top:10px;background:var(--bg);color:var
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script>
+/* 部署 Apps Script 後，把網頁應用程式網址貼在下面兩個引號之間 */
+window.DAMING_ENDPOINT='';
+</script>
+<script>
 (function(){
 "use strict";
 var $=function(s){return document.querySelector(s)};
 var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
 var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 
+var ENDPOINT=String(window.DAMING_ENDPOINT||'').trim();
 var SUGARS=['正常','少糖','半糖','微糖','1分糖','無糖'];
 var ICES=['正常冰','微冰','去冰','完全去冰'];
 var TOPS=[
@@ -259,24 +279,30 @@ function groups(){
   return gs;
 }
 var HEAD='【大茗本位製茶堂 訂單】';
-function textByPerson(){
-  var o=[HEAD],tt=totals();
-  groups().forEach(function(g){
+function cartRows(){return cart.map(function(l){return{person:l.person,desc:desc(l),qty:l.qty,unit:l.unit}})}
+function sumRows(rows){var n=0,t=0;rows.forEach(function(r){n+=r.qty;t+=r.unit*r.qty});return{n:n,t:t}}
+function textByPerson(rows){
+  var o=[HEAD],tt=sumRows(rows),idx=Object.create(null),gs=[];
+  rows.forEach(function(r){
+    if(!(r.person in idx)){idx[r.person]=gs.length;gs.push({name:r.person,lines:[],sub:0})}
+    var g=gs[idx[r.person]];g.lines.push(r);g.sub+=r.unit*r.qty;
+  });
+  gs.forEach(function(g){
     o.push('■ '+g.name);
-    g.lines.forEach(function(l){o.push('・'+desc(l)+' ×'+l.qty+'　$'+l.unit*l.qty)});
+    g.lines.forEach(function(r){o.push('・'+r.desc+' ×'+r.qty+'　$'+r.unit*r.qty)});
     o.push('　小計 $'+g.sub);
   });
   o.push('共 '+tt.n+' 項，合計 $'+tt.t);
   return o.join('\n');
 }
-function textMerged(){
-  var m={},order=[],tt=totals();
-  cart.forEach(function(l){
-    var k=desc(l);
-    if(!m[k]){m[k]={q:0,who:{},order:[]};order.push(k)}
-    m[k].q+=l.qty;
-    if(!(l.person in m[k].who)){m[k].who[l.person]=0;m[k].order.push(l.person)}
-    m[k].who[l.person]+=l.qty;
+function textMerged(rows){
+  var m=Object.create(null),order=[],tt=sumRows(rows);
+  rows.forEach(function(r){
+    var k=r.desc;
+    if(!m[k]){m[k]={q:0,who:Object.create(null),order:[]};order.push(k)}
+    m[k].q+=r.qty;
+    if(!(r.person in m[k].who)){m[k].who[r.person]=0;m[k].order.push(r.person)}
+    m[k].who[r.person]+=r.qty;
   });
   var o=[HEAD];
   order.forEach(function(k,i){
@@ -290,9 +316,9 @@ function textMerged(){
 /* ---- 彈出面板 ---- */
 var S={mode:null,fmt:'person',confirmClear:false};
 var toastT=null;
-function toast(msg){
+function toast(msg,ms){
   var t=$('#toast');t.textContent=msg;t.hidden=false;
-  clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},2200);
+  clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},ms||2200);
 }
 function opt(label,on,attrs,dis){return '<button class="opt" aria-pressed="'+(on?'true':'false')+'" '+attrs+(dis?' disabled':'')+'>'+esc(label)+'</button>'}
 function grp(title,inner){return '<div class="grp"><h3>'+title+'</h3><div class="opts">'+inner.join('')+'</div></div>'}
@@ -345,10 +371,12 @@ function cartSheet(){
       h+='<div class="ln"><div class="d">'+esc(desc(l))+'<small>$'+l.unit+' × '+l.qty+' = $'+l.unit*l.qty+'</small></div><div class="step"><button data-act="dec" data-k="'+esc(l.k)+'" aria-label="減少">−</button><span>'+l.qty+'</span><button data-act="inc" data-k="'+esc(l.k)+'" aria-label="增加">+</button></div></div>';
     });
   });
-  var txt=S.fmt==='person'?textByPerson():textMerged();
+  var rws=cartRows(),txt=S.fmt==='person'?textByPerson(rws):textMerged(rws);
   h+='<div class="seg">'+opt('依人分組',S.fmt==='person','data-act="fmt" data-v="person"')+opt('合併杯數（給店員）',S.fmt==='merged','data-act="fmt" data-v="merged"')+'</div>';
   h+='<textarea id="txt" readonly rows="'+Math.min(14,txt.split('\n').length+1)+'" aria-label="訂單文字">'+esc(txt)+'</textarea></div>';
-  h+='<div class="sh-foot"><button class="ghost" data-act="clear">'+(S.confirmClear?'再按一次清空':'清空')+'</button><button class="primary" data-act="copy"><span>複製訂單</span><span class="n">共 '+tt.n+' 項 $'+tt.t+'</span></button></div>';
+  var clr='<button class="ghost" data-act="clear">'+(S.confirmClear?'再按一次清空':'清空')+'</button>';
+  if(ENDPOINT)h+='<div class="sh-foot">'+clr+'<button class="sec" data-act="copy">複製</button><button class="primary" data-act="submit"'+(sending?' disabled':'')+'><span>'+(sending?'送出中…':'送出訂單')+'</span><span class="n">$'+tt.t+'</span></button></div>';
+  else h+='<div class="sh-foot">'+clr+'<button class="primary" data-act="copy"><span>複製訂單</span><span class="n">共 '+tt.n+' 項 $'+tt.t+'</span></button></div>';
   return h;
 }
 function paint(){
@@ -370,12 +398,12 @@ function hide(){
 }
 function bar(){
   var tt=totals();
-  $('#bar').hidden=!tt.n;
+  $('#bar').hidden=!tt.n||location.hash==='#admin';
   $('#barL').textContent='查看訂單・'+tt.n+' 項';
   $('#barR').textContent='$'+tt.t;
 }
-function copyText(){
-  var ta=$('#txt');if(!ta)return;
+function copyFrom(sel){
+  var ta=$(sel);if(!ta)return;
   var done=function(){toast('已複製，貼到 LINE 就能用')};
   var fallback=function(){ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);toast('已選取文字，請長按後選擇拷貝')};
   try{
@@ -389,6 +417,17 @@ document.addEventListener('click',function(e){
   if(!el)return;
   var a=el.dataset.act,d=el.dataset;
   if(a==='open'){openItem(d.id);return}
+  if(a==='akey'){var kv=$('#akey');if(kv)store.set('daming-key',kv.value.trim());aload();return}
+  if(a==='arefresh'){aload();return}
+  if(a==='afmt'){A.fmt=d.v;paintAdmin();return}
+  if(a==='acopy'){copyFrom('#atxt');return}
+  if(a==='adel'){apost({action:'delete',batch:d.b});return}
+  if(a==='aclr'){
+    if(A.confirm){A.confirm=false;apost({action:'clear'})}
+    else{A.confirm=true;paintAdmin();setTimeout(function(){if(A.confirm){A.confirm=false;paintAdmin()}},3000)}
+    return;
+  }
+  if(a==='submit'){submitOrder();return}
   if(a==='cart'){S={mode:'cart',fmt:S.fmt||'person',confirmClear:false};show();return}
   if(a==='close'){hide();return}
   if(a==='v')S.v=+d.i;
@@ -403,7 +442,7 @@ document.addEventListener('click',function(e){
   else if(a==='fmt')S.fmt=d.v;
   else if(a==='inc'){var l=findLine(d.k);if(l){l.qty=Math.min(99,l.qty+1);save()}}
   else if(a==='dec'){var l2=findLine(d.k);if(l2){l2.qty--;if(l2.qty<=0)cart=cart.filter(function(x){return x!==l2});save()}}
-  else if(a==='copy'){copyText();return}
+  else if(a==='copy'){copyFrom('#txt');return}
   else if(a==='clear'){
     if(S.confirmClear){cart=[];save();hide();bar();toast('訂單已清空');return}
     S.confirmClear=true;paint();
@@ -420,7 +459,84 @@ $('#nav').addEventListener('click',function(e){
 });
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&S.mode)hide()});
 
-renderMenu();bar();
+/* ---- 送出訂單與主揪後台（需要 Apps Script 網址） ---- */
+function post(body){
+  return fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){return r.json()});
+}
+var sending=false;
+function submitOrder(){
+  if(sending||!cart.length||!ENDPOINT)return;
+  sending=true;paint();
+  var batch='b'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),tt=totals();
+  var body={action:'submit',batch:batch,rows:cartRows()};
+  var ok=function(msg){sending=false;cart=[];save();hide();bar();toast(msg,3600)};
+  var fail=function(){sending=false;if(S.mode==='cart')paint();toast('送出失敗，請檢查網路後再試一次',3600)};
+  post(body).then(function(r){if(r&&r.ok)ok('已送出給主揪：'+tt.n+' 項 $'+tt.t);else fail()},function(){
+    fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(){ok('已送出，建議跟主揪確認有收到')},fail);
+  });
+}
+var A={rows:null,err:'',fmt:'person',confirm:false,loading:false};
+function adminKey(){return store.get('daming-key')||''}
+function aload(){
+  A.loading=true;A.err='';paintAdmin();
+  post({action:'list',key:adminKey()}).then(function(r){
+    A.loading=false;
+    if(!r||!r.ok){A.rows=null;A.err=(r&&r.error==='forbidden')?'密碼不正確':'讀取失敗，請稍後再試'}
+    else A.rows=r.rows.map(function(x){return{ts:String(x[0]),batch:String(x[1]),person:String(x[2]),desc:String(x[3]),qty:+x[4]||0,unit:+x[5]||0}});
+    paintAdmin();
+  },function(){A.loading=false;A.rows=null;A.err='連不上試算表，請確認網址設定與網路';paintAdmin()});
+}
+function apost(extra){
+  var b={key:adminKey()};for(var k in extra)b[k]=extra[k];
+  post(b).then(function(r){if(r&&r.ok){toast('完成');aload()}else{toast('操作失敗，請重新整理後再試')}},function(){toast('連不上試算表')});
+}
+function paintAdmin(){
+  var el=$('#admin');if(el.hidden)return;
+  var h='<div class="adm-h"><h2>主揪後台</h2><a href="#">回到菜單</a></div>';
+  if(!ENDPOINT){el.innerHTML=h+'<p class="empty">尚未設定試算表網址。請把 Apps Script 的網址貼進 index.html 最上面的 DAMING_ENDPOINT。</p>';return}
+  if(!A.rows){
+    h+='<div class="field"><label for="akey">密碼</label><input id="akey" type="password" autocomplete="off" value="'+esc(adminKey())+'" placeholder="Apps Script 裡設定的 ADMIN_KEY"></div>';
+    h+='<div class="seg"><button class="primary" data-act="akey"'+(A.loading?' disabled':'')+'><span>'+(A.loading?'讀取中…':'查看訂單')+'</span></button></div>';
+    if(A.err)h+='<p class="note">'+esc(A.err)+'</p>';
+    el.innerHTML=h;return;
+  }
+  var rows=A.rows,tt=sumRows(rows),ppl=Object.create(null),np=0;
+  rows.forEach(function(r){if(!ppl[r.person]){ppl[r.person]=1;np++}});
+  h+='<div class="stats"><div><b>'+np+'</b><span>人</span></div><div><b>'+tt.n+'</b><span>項</span></div><div><b>$'+tt.t+'</b><span>總金額</span></div></div>';
+  if(!rows.length){
+    h+='<p class="empty">還沒有人送出訂單。</p>';
+  }else{
+    var txt=A.fmt==='person'?textByPerson(rows):textMerged(rows);
+    h+='<div class="seg">'+opt('依人分組',A.fmt==='person','data-act="afmt" data-v="person"')+opt('合併杯數（給店員）',A.fmt==='merged','data-act="afmt" data-v="merged"')+'</div>';
+    h+='<textarea id="atxt" readonly rows="'+Math.min(16,txt.split('\n').length+1)+'" aria-label="訂單文字">'+esc(txt)+'</textarea>';
+    h+='<div class="seg"><button class="primary" data-act="acopy"><span>複製訂單</span><span class="n">共 '+tt.n+' 項 $'+tt.t+'</span></button></div>';
+    var bs=[],bi=Object.create(null);
+    rows.forEach(function(r){
+      if(!(r.batch in bi)){bi[r.batch]=bs.length;bs.push({id:r.batch,ts:r.ts,lines:[],sub:0})}
+      var b=bs[bi[r.batch]];b.lines.push(r);b.sub+=r.unit*r.qty;
+    });
+    h+='<div class="grp"><h3>每筆送單（新的在上面）</h3></div>';
+    bs.reverse().forEach(function(b){
+      h+='<div class="person"><b>'+esc(b.ts)+'</b><span>$'+b.sub+'</span></div>';
+      b.lines.forEach(function(r){h+='<div class="ln"><div class="d">'+esc(r.person)+'｜'+esc(r.desc)+'<small>×'+r.qty+'・$'+r.unit*r.qty+'</small></div></div>'});
+      h+='<div class="bt"><span></span><button class="ghost" data-act="adel" data-b="'+esc(b.id)+'">刪除這筆送單</button></div>';
+    });
+  }
+  h+='<div class="adm-act"><button class="sec" data-act="arefresh">重新整理</button><button class="ghost" data-act="aclr">'+(A.confirm?'再按一次清空全部':'清空全部（開新一輪）')+'</button></div>';
+  el.innerHTML=h;
+}
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target&&e.target.id==='akey'){var kv=$('#akey');store.set('daming-key',kv.value.trim());aload()}});
+function route(){
+  var adm=location.hash==='#admin';
+  $('#front').hidden=adm;$('#admin').hidden=!adm;
+  if(adm){hide();paintAdmin();if(ENDPOINT&&adminKey()&&!A.rows&&!A.loading)aload()}
+  else window.scrollTo(0,0);
+  bar();
+}
+window.addEventListener('hashchange',route);
+if(ENDPOINT)$('#hint').textContent='每個人先輸入自己的名字再點，按「送出訂單」後，主揪會在後台看到。';
+
+renderMenu();bar();route();
 })();
 </script>
 </body></html>
