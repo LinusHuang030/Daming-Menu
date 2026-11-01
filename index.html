@@ -1,15 +1,17 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>大茗點餐單</title>
+<title>飲料揪團點餐</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap">
 <style>
 body{margin:0}
 
-/* 版面：單欄手機優先。品牌區 → 點餐人與搜尋 → 黏性分類列 → 各分類品項；底部固定訂單列，點開從下方滑出。配色取自菜單本身的橄欖綠墨色與暗紅標記。 */
+/* 版面：單欄手機優先。首頁是店家清單 → 點進店家看分類菜單；底部固定訂單列，點開從下方滑出；#admin 是主揪後台。每家店有自己的主色，其他配色共用。 */
 :root{
   --bg:#f4f5ef; --surface:#ffffff; --ink:#2b3526; --muted:#667061; --line:#d8dccd; --tint:#e6eadb;
-  --accent:#3d4b33; --on-accent:#f4f5ef; --red:#8e2b2b; --on-red:#ffffff;
+  --on-accent:#f7f8f2; --red:#8e2b2b; --on-red:#ffffff;
+  --a-home:#3d4b33; --a-daming:#3d4b33; --a-qingshan:#2f6250; --a-dezheng:#24427a; --a-hachiyo:#5b4a6e;
+  --accent:var(--a-home);
   --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
   --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   --num:"Barlow Condensed","Noto Sans TC","PingFang TC",sans-serif;
@@ -17,13 +19,21 @@ body{margin:0}
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#161a13; --surface:#1f251b; --ink:#e7ebdc; --muted:#9ba68f; --line:#333c2d; --tint:#272f21;
-    --accent:#b9d19a; --on-accent:#18200f; --red:#e59383; --on-red:#2a0f0b; color-scheme:dark;
+    --on-accent:#141a10; --red:#e59383; --on-red:#2a0f0b;
+    --a-home:#b9d19a; --a-daming:#b9d19a; --a-qingshan:#93d1b5; --a-dezheng:#a9c1f0; --a-hachiyo:#cdb8e6;
+    color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#161a13; --surface:#1f251b; --ink:#e7ebdc; --muted:#9ba68f; --line:#333c2d; --tint:#272f21;
-  --accent:#b9d19a; --on-accent:#18200f; --red:#e59383; --on-red:#2a0f0b; color-scheme:dark;
+  --on-accent:#141a10; --red:#e59383; --on-red:#2a0f0b;
+  --a-home:#b9d19a; --a-daming:#b9d19a; --a-qingshan:#93d1b5; --a-dezheng:#a9c1f0; --a-hachiyo:#cdb8e6;
+  color-scheme:dark;
 }
+:root[data-store="daming"]{--accent:var(--a-daming)}
+:root[data-store="qingshan"]{--accent:var(--a-qingshan)}
+:root[data-store="dezheng"]{--accent:var(--a-dezheng)}
+:root[data-store="hachiyo"]{--accent:var(--a-hachiyo)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{
@@ -34,19 +44,30 @@ body{
 }
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 button{font:inherit;color:inherit}
-button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .wrap{max-width:640px;margin:0 auto}
 
 .brand{padding:20px 0 6px}
 .eyebrow{font:600 12px var(--num);letter-spacing:.16em;color:var(--muted)}
-h1{font:900 34px/1.15 var(--serif);letter-spacing:.06em;margin:8px 0 4px;text-wrap:balance}
-.sub{font:500 13px var(--num);letter-spacing:.1em;color:var(--muted)}
+h1{font:900 32px/1.15 var(--serif);letter-spacing:.06em;margin:8px 0 4px;text-wrap:balance}
+.sub{font-size:13px;color:var(--muted)}
+.back{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font-size:14px;padding:6px 0;cursor:pointer}
 .tools{display:grid;gap:10px;margin:16px 0 4px}
 .field{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 12px}
 .field:focus-within{border-color:var(--accent)}
 .field label{font-weight:700;font-size:13px;color:var(--muted);white-space:nowrap}
 .field input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:16px;padding:12px 0;outline:0}
 .hint{font-size:12.5px;color:var(--muted);margin:0}
+
+.stores{display:grid;gap:10px;margin-top:20px}
+.store{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;text-decoration:none}
+.store:hover{border-color:var(--sa)}
+.store b{display:block;font:900 22px/1.25 var(--serif);letter-spacing:.06em;color:var(--sa)}
+.store span.s{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.store .go{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.store .cnt{font:600 13px/1 var(--sans);background:var(--sa);color:var(--on-accent);border-radius:999px;padding:5px 9px}
+.store .arr{font-size:22px;color:var(--sa)}
 
 .nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line);margin-top:12px}
 .navin{display:flex;gap:8px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
@@ -55,9 +76,9 @@ h1{font:900 34px/1.15 var(--serif);letter-spacing:.06em;margin:8px 0 4px;text-wr
 .navin button.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 
 section.cat{scroll-margin-top:calc(58px + env(safe-area-inset-top,0px));padding-top:26px}
-.cat-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:6px}
-.cat-h h2{font:900 24px/1.2 var(--serif);letter-spacing:.08em;margin:0}
-.sz{font:700 16px var(--serif);color:var(--muted)}
+.cat-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:2px solid var(--accent);padding-bottom:6px}
+.cat-h h2{font:900 23px/1.2 var(--serif);letter-spacing:.06em;margin:0;color:var(--accent)}
+.sz{font:600 15px var(--num);letter-spacing:.06em;color:var(--muted)}
 .desc{font-size:13px;color:var(--muted);margin:6px 0 2px}
 ul{list-style:none;margin:0;padding:0}
 .item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:13px 0;cursor:pointer}
@@ -65,8 +86,10 @@ ul{list-style:none;margin:0;padding:0}
 .zh{font-weight:700;font-size:16px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
 .en{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
 .note{display:block;font-size:12.5px;color:var(--red);font-weight:500}
-.price{font:600 22px var(--num);font-variant-numeric:tabular-nums}
-.price small{font:500 12px var(--sans);color:var(--muted);margin-left:2px}
+.price{font:600 22px var(--num);font-variant-numeric:tabular-nums;text-align:right}
+.prices{display:grid;grid-template-columns:auto auto;column-gap:6px;align-items:baseline;font-variant-numeric:tabular-nums}
+.prices i{font:500 12px var(--sans);color:var(--muted);font-style:normal;text-align:right}
+.prices b{font:600 19px/1.15 var(--num);text-align:right}
 .plus{width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-size:22px;line-height:1}
 .tg{font:600 11px/1 var(--sans);padding:3px 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
 .tg.pop{color:var(--accent);border-color:var(--accent)}
@@ -93,53 +116,70 @@ ul{list-style:none;margin:0;padding:0}
 .step span{min-width:26px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 .primary{flex:1;min-width:0;border:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px;padding:13px 16px;border-radius:12px;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
 .primary .n{font:600 20px/1.2 var(--num);font-variant-numeric:tabular-nums}
+.sec{flex:none;border:1px solid var(--line);background:var(--bg);font-weight:700;font-size:14px;padding:12px 14px;border-radius:12px;cursor:pointer}
+.sec:disabled,.primary:disabled{opacity:.6;cursor:default}
 .ghost{flex:none;border:0;background:none;color:var(--muted);font-size:14px;padding:10px 4px;cursor:pointer;text-decoration:underline}
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:linear-gradient(to top,var(--bg) 65%,transparent)}
 .bar .primary{display:flex;max-width:640px;margin:0 auto;width:100%;box-shadow:0 4px 16px rgba(0,0,0,.22)}
 
-.person{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);margin-top:18px;padding-bottom:4px}
-.person b{font:900 17px var(--serif);letter-spacing:.04em}
-.person span{font:600 18px var(--num)}
+.shop{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:22px;padding:8px 12px;border-radius:8px;background:var(--tint)}
+.shop b{font:900 18px var(--serif);letter-spacing:.06em}
+.shop span{font:600 18px var(--num);font-variant-numeric:tabular-nums}
+.person{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--ink);margin-top:14px;padding-bottom:4px}
+.person b{font:700 15px var(--sans)}
+.person span{font:600 17px var(--num);font-variant-numeric:tabular-nums}
 .ln{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .ln .d{min-width:0;font-weight:500}
 .ln small{display:block;font:500 13px var(--num);color:var(--muted)}
-.seg{display:flex;gap:8px;margin-top:20px}
+.seg{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
 textarea{display:block;width:100%;margin-top:10px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:14px/1.7 var(--sans);resize:none}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(88px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:14px;font-weight:500;z-index:40;max-width:calc(100% - 32px);text-align:center}
-.sec{flex:none;border:1px solid var(--line);background:var(--bg);font-weight:700;font-size:14px;padding:12px 14px;border-radius:12px;cursor:pointer}
-.sec:disabled,.primary:disabled{opacity:.6;cursor:default}
+
 .adm-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:22px 0 6px;border-bottom:2px solid var(--ink);margin-bottom:14px}
 .adm-h h2{font:900 24px/1.2 var(--serif);letter-spacing:.08em;margin:0}
 .adm-h a{color:var(--muted);font-size:14px}
-.stats{display:flex;gap:28px;padding:14px 0 6px}
+.stats{display:flex;flex-wrap:wrap;gap:28px;padding:14px 0 6px}
 .stats b{display:block;font:600 34px/1 var(--num);font-variant-numeric:tabular-nums}
 .stats span{font-size:12.5px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chips span{font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.chips b{font:600 15px var(--num);margin-left:4px}
 .adm-act{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px}
-.bt{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px}
-.legend a{color:inherit}
+.bt{display:flex;justify-content:flex-end;margin-top:6px}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.4}}}
 </style>
 </head><body>
 
 <div class="wrap">
-  <header class="brand">
-    <div class="eyebrow">DAMING MENU · SINCE 1994 · 北部菜單</div>
-    <h1>大茗本位製茶堂</h1>
-    <div class="sub">PRO CHING CHA SHOP from TAIWAN</div>
-  </header>
-  <div id="front">
-  <div class="tools">
-    <div class="field"><label for="who">點餐人</label><input id="who" maxlength="12" placeholder="輸入名字，例如：小明" autocomplete="off"></div>
-    <p class="hint" id="hint">每個人先輸入自己的名字再點，訂單會分開列出，最後一起複製給買的人。</p>
-    <div class="field"><label for="q">搜尋</label><input id="q" type="search" placeholder="例如：奶蓋、冬瓜、拿鐵" autocomplete="off"></div>
+  <div id="home">
+    <header class="brand">
+      <div class="eyebrow">TEA RUN · 揪團點飲料</div>
+      <h1>今天喝哪家？</h1>
+      <div class="sub">選一家店點餐，跨店也可以放在同一張訂單。</div>
+    </header>
+    <div class="tools">
+      <div class="field"><label for="who">點餐人</label><input id="who" maxlength="12" placeholder="輸入名字，例如：小明" autocomplete="off"></div>
+      <p class="hint" id="hint">每個人先輸入自己的名字再點，訂單會依店家、依人分開列出。</p>
+    </div>
+    <div class="stores" id="stores"></div>
+    <footer class="legend">
+      <div>菜單依各店紙本菜單整理，價格與選項以店內為準。</div>
+      <div><a href="#admin">主揪後台</a></div>
+    </footer>
   </div>
-  <nav class="nav" aria-label="分類"><div class="navin" id="nav"></div></nav>
-  <main id="menu"></main>
-  <footer class="legend">
-    <div>人氣推薦／含鮮奶／僅冷飲，標示依菜單。熱飲僅提供中杯（600ml），價格以現場為準。</div>
-    <div>無咖啡因飲品請詢問店員。價格依北部菜單整理，實際以店內為準。</div>
-    <div><a href="#admin">主揪後台</a></div>
-  </footer>
+  <div id="shop" hidden>
+    <header class="brand">
+      <a class="back" href="#">← 換一家店</a>
+      <h1 id="sName"></h1>
+      <div class="sub" id="sSub"></div>
+    </header>
+    <div class="tools">
+      <div class="field"><label for="who2">點餐人</label><input id="who2" maxlength="12" placeholder="輸入名字，例如：小明" autocomplete="off"></div>
+      <div class="field"><label for="q">搜尋</label><input id="q" type="search" placeholder="搜尋這家店的品項" autocomplete="off"></div>
+    </div>
+    <nav class="nav" aria-label="分類"><div class="navin" id="nav"></div></nav>
+    <main id="menu"></main>
+    <footer class="legend" id="sNotes"></footer>
   </div>
   <div id="admin" hidden></div>
 </div>
@@ -151,227 +191,451 @@ textarea{display:block;width:100%;margin-top:10px;background:var(--bg);color:var
 
 <script>
 /* 部署 Apps Script 後，把網頁應用程式網址貼在下面兩個引號之間 */
-window.DAMING_ENDPOINT='https://script.google.com/macros/s/AKfycbwejtrmvzy-CeVOPxr0k8zQkuq0b2P5PXAd4i-kVDnWpHtOql5puPdPpcTFQ84VGD0S/exec';
+window.DAMING_ENDPOINT='';
 </script>
 <script>
+/* ===== 店家菜單資料 =====
+   p：價格，依 sizes 順序（null＝沒有該尺寸）
+   tags：標示；sugars／ices：該品項限定的甜度／冰量；noHot：不做熱飲；noTop：不提供加料
+   extras：該品項專屬加購；variants：同價不同口味；food：餐點（不選冰糖）            */
+var STORES=[
+{id:'daming',name:'大茗本位製茶堂',short:'大茗',sub:'北部菜單・L 杯為主・熱飲僅中杯',sizes:['L'],
+ sugars:['正常','少糖','半糖','微糖','1分糖','無糖'],
+ ices:[{n:'正常冰'},{n:'微冰'},{n:'去冰'},{n:'完全去冰'},{n:'熱飲（中杯600ml）',hot:true,noSize:true}],
+ tops:[{n:'波霸珍珠',p:10},{n:'嫩仙草',p:10},{n:'烤糖蕎麥凍',p:15},{n:'酪梨奶蓋',p:30},{n:'珈琲粉粿',p:15}],
+ hotNote:'熱飲僅提供中杯，價格以現場為準。',
+ notes:['人氣推薦、含鮮奶、僅冷飲依菜單標示；無咖啡因飲品請詢問店員。','熱飲僅提供中杯（600ml），價格以現場為準。'],
+ cats:[
+ {name:'嚴選茗品',desc:'高山茶種才有的輕盈茶感，尾韻細長，持久回甘。',items:[
+  {zh:'玉露青茶',en:'Taiwanese Ching Tea',p:[40],tags:'人氣推薦'},
+  {zh:'桂花青茶',en:'Osmanthus Ching Tea',p:[40],tags:'人氣推薦'},
+  {zh:'炭燒青茶',en:'Oolong Tea',p:[40]}]},
+ {name:'牧場直送',desc:'經典茶底搭配濃郁好農鮮奶，令人愛不釋口的香醇比例。',items:[
+  {zh:'紅茶拿鐵',en:'Black Tea Latte',p:[70],tags:'人氣推薦 含鮮奶'},
+  {zh:'翡翠拿鐵',en:'Jasmine Green Tea Latte',p:[70],tags:'含鮮奶'},
+  {zh:'鐵觀音拿鐵',en:'Oolong Tea Latte',p:[70],tags:'含鮮奶'},
+  {zh:'仙草嫩奶',en:'Grass Jelly Milk',p:[70],tags:'人氣推薦 含鮮奶 僅冷飲',note:'3%奶精 味蕾升華（含奶精）'},
+  {zh:'珍珠粉粿牛奶(珈琲粉粿)',en:'Pearl Milk with Coffee Jelly',sz:['M'],p:[70],tags:'NEW 含鮮奶 僅冷飲'}]},
+ {name:'雲朵奶蓋',desc:'濃郁酪梨奶蓋佐純粹茶品，成就層次分明的順口奶蓋茶。',items:[
+  {zh:'酪梨奶蓋紅玉',en:'Taiwanese Black Tea With Avocado Milk Foam',p:[69],tags:'人氣推薦 僅冷飲'},
+  {zh:'酪梨奶蓋綠茶',en:'Taiwanese Jasmine Green Tea With Avocado Milk Foam',p:[69],tags:'僅冷飲'},
+  {zh:'酪梨奶蓋烏龍',en:'Oolong Tea With Avocado Milk Foam',p:[69],tags:'人氣推薦 僅冷飲'},
+  {zh:'酪梨奶蓋冬瓜露',en:'Winter Melon Drink With Avocado Milk Foam',p:[69],tags:'僅冷飲'}]},
+ {name:'經典純粹',desc:'嚴選茶葉沖泡，茶感圓潤，濃郁。',items:[
+  {zh:'翡翠綠茶',en:'Jasmine Green Tea',p:[40]},
+  {zh:'紅玉紅茶',en:'Taiwanese Black Tea',p:[40],tags:'人氣推薦'},
+  {zh:'御品冬瓜露',en:'Winter Melon Drink',p:[40]},
+  {zh:'熟成油切蕎麥',en:'Buckwheat Tea',p:[40],tags:'人氣推薦',sugars:['無糖'],note:'限無糖'},
+  {zh:'冷萃東方美人',en:'Cold Brew Oriental Beauty Tea',p:[55],noHot:true},
+  {zh:'冷萃半熟金萱',en:'Cold Brew Jin Xuan Tea',p:[55],noHot:true}]},
+ {name:'香醇濃郁',desc:'順滑柔順的兒時奶茶滋味，找回熟悉的復刻味道。',items:[
+  {zh:'玉露奶青／桂花奶青',en:'Taiwanese Ching Milk Tea / Osmanthus Ching Milk Tea',p:[60],tags:'人氣推薦 含鮮奶',variants:['玉露奶青','桂花奶青']},
+  {zh:'懷舊經典奶茶／翡翠奶綠／鐵觀音奶茶',en:'Taiwanese Milk Tea (Black / Green / Oolong)',p:[55],variants:['懷舊經典奶茶','翡翠奶綠','鐵觀音奶茶']},
+  {zh:'熟成蕎麥奶茶',en:'Buckwheat Milk Tea',p:[60]},
+  {zh:'珍珠奶茶',en:'Bubble Milk Tea',p:[60]},
+  {zh:'烤糖蕎麥凍奶青',en:'Buckwheat Jelly Taiwanese Ching Milk Tea',p:[69],tags:'人氣推薦 含鮮奶 僅冷飲'},
+  {zh:'珈琲粉粿蕎麥奶',en:'Coffee Jelly with Buckwheat Milk Tea',p:[69],tags:'NEW 僅冷飲'}]},
+ {name:'職人手作',desc:'高山青茶搭配四季精選水果，繽紛清爽的特調飲品。',items:[
+  {zh:'蘋果玉露青',en:'Apple Taiwanese Ching Tea',p:[69],tags:'人氣推薦 僅冷飲',min1:true,note:'最低甜度 1 分糖'},
+  {zh:'老奶奶的鳳梨田',en:'Pineapple Juice Taiwanese Ching Tea',p:[69],tags:'人氣推薦',note:'本產品含有堅果類'},
+  {zh:'甘蔗玉露青',en:'Sugar Cane Taiwanese Ching Tea',p:[65]},
+  {zh:'冬瓜玉露青',en:'Winter Melon Taiwanese Ching Tea',p:[45]},
+  {zh:'纖檸冬瓜露',en:'Lemon Winter Melon Drink',p:[55],tags:'僅冷飲'},
+  {zh:'翡翠多多青',en:'Yakult Jasmine Green Tea',p:[60],tags:'僅冷飲'},
+  {zh:'檸檬桂花青',en:'Lemon Osmanthus Ching Tea',p:[65],tags:'人氣推薦 僅冷飲',min1:true,note:'最低甜度 1 分糖'},
+  {zh:'百香翡翠青',en:'Passion Jasmine Green Tea',p:[65],tags:'僅冷飲'},
+  {zh:'柳橙翡翠青',en:'Orange Jasmine Green Tea',p:[70],tags:'季節限定 僅冷飲',min1:true,note:'最低甜度 1 分糖'}]},
+ {name:'匠人茶點',desc:'午後時光必吃，細細品味生活的甜。',items:[
+  {zh:'酪梨奶蓋泡芙',en:'Avocado Milk Foam Puff',sz:['2入','4入','6入'],p:[85,170,255],tags:'人氣推薦',food:true},
+  {zh:'花生奶蓋泡芙',en:'Peanut Milk Foam Puff',sz:['2入','4入','6入'],p:[85,170,255],food:true}]}
+ ]},
+
+{id:'qingshan',name:'青山',short:'青山',sub:'M / L 兩種尺寸・可做常溫、溫熱',sizes:['M','L'],
+ sugars:['正常','少糖','半糖','微糖','1分糖','無糖'],
+ ices:[{n:'正常冰'},{n:'少冰'},{n:'微冰'},{n:'去冰'},{n:'常溫',hot:true},{n:'溫熱',hot:true}],
+ tops:[{n:'琥珀珍珠',p:10},{n:'蕎麥珍珠',p:15},{n:'海鹽奶蓋',p:20},{n:'蕎麥奶蓋',p:20},{n:'菜燕',p:10},{n:'青茶茶凍',p:10},{n:'青茶婚貴',p:10},{n:'杏仁凍',p:10}],
+ notes:['甜度：正常 100%・少糖 70%・半糖 50%・微糖 30%・1分糖 10%・無糖 0%。','冰量：正常 100%・少冰 70%・微冰 30%・去冰 0%，另有常溫、溫熱。','建議飲品於 1 小時內飲用完畢。'],
+ cats:[
+ {name:'青',desc:'四季青茶，依香氣與口感挑選。',items:[
+  {zh:'春青',p:[30,35],note:'香氣：花香・口感：輕・海拔 800–1200 M'},
+  {zh:'夏青',p:[30,35],note:'香氣：木質香・口感：重・海拔 800–1200 M'},
+  {zh:'秋青',p:[40,45],note:'香氣：奶香・口感：中・海拔 1200–1500 M'},
+  {zh:'冬青',p:[55,60],tags:'推薦',note:'香氣：清香・口感：輕・海拔 1300–1600 M'}]},
+ {name:'無',desc:'無咖啡因系列。',items:[
+  {zh:'東方菊花茶',p:[45,55],tags:'無咖啡因'},
+  {zh:'西穀蕎麥茶',p:[30,40],tags:'無咖啡因'},
+  {zh:'南非國寶茶',p:[40,50],tags:'無咖啡因'},
+  {zh:'北風桂花玄米茶',p:[35,45],tags:'推薦 無咖啡因'}]},
+ {name:'茶',desc:'',items:[
+  {zh:'綠水',p:[25,30]},
+  {zh:'天蟬紅茶',p:[35,40],tags:'推薦'}]},
+ {name:'奶',desc:'那堤系列可升級燕麥奶（M +10、L +15）。',items:[
+  {zh:'山峰奶茶',p:[45,50]},
+  {zh:'夏青那堤',p:[50,60],tags:'推薦',oat:true},
+  {zh:'蕎麥那堤',p:[50,65],tags:'無咖啡因',oat:true},
+  {zh:'天蟬那堤',p:[55,65],tags:'推薦',oat:true}]},
+ {name:'蓋',desc:'法國 Elle & Vire 鮮奶油特調，僅供少冰。',items:[
+  {zh:'蕎麥奶蓋 綠水',p:[45,50],ices:['少冰']},
+  {zh:'蕎麥奶蓋 玄米茶',p:[55,65],tags:'推薦 無咖啡因',ices:['少冰']},
+  {zh:'海鹽奶蓋 春青',p:[50,55],tags:'推薦',ices:['少冰']},
+  {zh:'海鹽奶蓋 紅茶',p:[55,60],tags:'推薦',ices:['少冰']},
+  {zh:'海鹽奶蓋 輕蘋香茶',p:[80,null],tags:'推薦',ices:['少冰']}]},
+ {name:'調',desc:'冬露最低糖量為半糖。',items:[
+  {zh:'青山綠水',p:[35,40],tags:'推薦'},
+  {zh:'春青菊花',p:[45,55]},
+  {zh:'蕎麥冬露',p:[null,50],tags:'推薦 無咖啡因',sugars:['正常','少糖','半糖'],note:'最低半糖'},
+  {zh:'春青冬露',p:[null,50],sugars:['正常','少糖','半糖'],note:'最低半糖'},
+  {zh:'菊花冬露',p:[null,55],tags:'無咖啡因',sugars:['正常','少糖','半糖'],note:'最低半糖'},
+  {zh:'多多綠水',p:[null,55]}]},
+ {name:'料',desc:'',items:[
+  {zh:'菜燕春青',p:[40,45],tags:'推薦'},
+  {zh:'菜燕奶茶',p:[55,60],tags:'推薦'},
+  {zh:'杏仁凍春青',p:[40,45]},
+  {zh:'青茶婚貴奶茶',p:[55,60]},
+  {zh:'琥珀珍珠奶茶',p:[55,60],tags:'推薦'},
+  {zh:'蕎麥珍珠奶茶',p:[60,65]},
+  {zh:'青茶凍天蟬那堤',p:[65,75],oat:true},
+  {zh:'琥珀珍珠天蟬那堤',p:[65,75],oat:true},
+  {zh:'蕎麥珍珠夏青那堤',p:[65,75],tags:'推薦',oat:true}]},
+ {name:'果',desc:'不提供無糖。',items:[
+  {zh:'白甘蔗春青',p:[55,60],tags:'推薦',noSugarFree:true},
+  {zh:'香檸綠水',p:[55,60],noSugarFree:true},
+  {zh:'柳丁綠水',p:[65,70],noSugarFree:true},
+  {zh:'紅柚綠水',p:[65,70],tags:'推薦',noSugarFree:true},
+  {zh:'橘子春青',p:[65,70],tags:'推薦',noSugarFree:true},
+  {zh:'荔枝春青',p:[70,75],tags:'推薦',noSugarFree:true,note:'含青茶凍'},
+  {zh:'水梨春青',p:[70,75],tags:'推薦',noSugarFree:true},
+  {zh:'輕蘋香茶',p:[75,80],tags:'推薦',noSugarFree:true},
+  {zh:'水蜜桃夏青',p:[75,80],tags:'推薦',noSugarFree:true}]}
+ ]},
+
+{id:'dezheng',name:'得正',short:'得正',hotOptIn:true,sub:'OOLONG TEA PROJECT・M 16oz / L 22oz',sizes:['M','L'],
+ sugars:['正常','少糖','半糖','微糖','一分糖','無糖'],
+ ices:[{n:'正常冰'},{n:'少冰'},{n:'微冰'},{n:'去冰'},{n:'熱',hot:true,d:5}],
+ tops:[{n:'珍珠',p:10},{n:'黃金珍珠',p:10},{n:'焙烏龍茶凍',p:10}],
+ hotNote:'熱飲每杯 +5 元。',
+ notes:['標示「可熱」的品項可調整為熱飲，每杯 +5 元。','芝士奶蓋固定少冰。','菜單上沒有列甜度與冰量選項，這裡用常見選項，實際以店內為準。'],
+ cats:[
+ {name:'Original TEA',desc:'',items:[
+  {zh:'紅茶',en:'Black Tea',p:[30,35],hot:true},
+  {zh:'綠茶',en:'Green Tea',p:[30,35],hot:true},
+  {zh:'春烏龍',en:'Spring Oolong Tea',p:[30,35],tags:'茶師推薦',hot:true},
+  {zh:'輕烏龍',en:'Light Roasted Oolong Tea',p:[30,35],tags:'茶師推薦',hot:true},
+  {zh:'焙烏龍',en:'Dark Roasted Oolong Tea',p:[30,35],tags:'茶師推薦',hot:true},
+  {zh:'緋烏龍',en:'Red Oolong Tea',p:[35,40],hot:true}]},
+ {name:'Classic MILK TEA',desc:'',items:[
+  {zh:'奶茶',en:'Milk Tea',p:[45,50],hot:true},
+  {zh:'焙烏龍奶茶',en:'Dark Roasted Oolong Milk Tea',p:[45,50],tags:'茶師推薦',hot:true},
+  {zh:'珍珠奶茶',en:'Pearl Milk Tea',p:[55,60],hot:true},
+  {zh:'黃金珍珠奶綠',en:'Golden Bubble Green Milk Tea',p:[55,60],tags:'茶師推薦',hot:true},
+  {zh:'烘吉奶茶',en:'Hojicha Milk Tea',p:[60,null],hot:true}]},
+ {name:'Double FRUIT',desc:'',items:[
+  {zh:'檸檬春烏龍',en:'Lemon Spring Oolong Tea',p:[60,70],tags:'茶師推薦'},
+  {zh:'香橙春烏龍',en:'Orange Spring Oolong Tea',p:[60,70],tags:'茶師推薦'},
+  {zh:'甘蔗春烏龍',en:'Sugar Cane Spring Oolong Tea',p:[65,75],tags:'茶師推薦'},
+  {zh:'青梅春烏龍',en:'Green Plum Spring Oolong Tea',p:[60,70]},
+  {zh:'優酪春烏龍',en:'Yogurt Spring Oolong Tea',p:[60,70],tags:'含葡萄柚'},
+  {zh:'雙柚金烏龍',en:'Yuzu Oolong Tea',p:[60,70],tags:'含葡萄柚'}]},
+ {name:'Fresh MILK',desc:'',items:[
+  {zh:'紅茶鮮奶',en:'Black Tea Latte',p:[55,65],tags:'茶師推薦',hot:true},
+  {zh:'輕烏龍鮮奶',en:'Light Roasted Oolong Tea Latte',p:[55,65],tags:'茶師推薦',hot:true},
+  {zh:'焙烏龍鮮奶',en:'Dark Roasted Oolong Tea Latte',p:[55,65],hot:true},
+  {zh:'緋烏龍鮮奶',en:'Red Oolong Tea Latte',p:[60,70],hot:true},
+  {zh:'烘吉鮮奶',en:'Hojicha Latte',p:[80,null],hot:true}]},
+ {name:'Cheese MILK FOAM',desc:'奶蓋固定少冰。',items:[
+  {zh:'芝士奶蓋春烏龍',en:'Cheese Milk Foam Spring Oolong Tea',p:[50,60],tags:'茶師推薦',ices:['少冰']},
+  {zh:'芝士奶蓋焙烏龍',en:'Cheese Milk Foam Dark Roasted Oolong Tea',p:[50,60],tags:'茶師推薦',ices:['少冰']},
+  {zh:'芝士奶蓋緋烏龍',en:'Cheese Milk Foam Red Oolong Tea',p:[55,65],ices:['少冰']},
+  {zh:'芝士奶蓋阿華田',en:'Cheese Milk Foam Ovaltine',p:[60,70],ices:['少冰']},
+  {zh:'芝士奶蓋烘吉茶',en:'Cheese Milk Foam Hojicha',p:[60,70],ices:['少冰']}]}
+ ]},
+
+{id:'hachiyo',name:'八曜和茶',short:'八曜',sub:'單一尺寸・甜度 無糖到 8 分糖',sizes:[''],
+ sugars:['無糖','1分糖','3分糖','5分糖','8分糖'],
+ ices:[{n:'35%冰'},{n:'五顆冰'},{n:'完全去冰'},{n:'溫',hot:true},{n:'熱',hot:true}],
+ tops:[{n:'蜜漬白玉丸',p:10}],
+ notes:['甜度：無糖、1分、3分、5分、8分糖（全糖）；冰量：35%冰、五顆冰、完全去冰、溫、熱。','極韻白奶茶與厚奶茶無法做無糖。纖果爽限冰飲；乳酸樂多與 JLJ 益生菌固定冰量、不提供加料。','JLJ 益生菌（+25）只能加在無咖啡因系列的指定品項。和風茶、複方茶的穀麥沉澱為正常現象。'],
+ cats:[
+ {name:'和風茶',desc:'無咖啡因・和風穀麥方。',items:[
+  {zh:'八曜和茶',p:[35],tags:'無咖啡因 含麩質',jlj:true},
+  {zh:'和風308',p:[50],tags:'無咖啡因 含麩質',jlj:true},
+  {zh:'83蜂凝露',p:[55],tags:'無咖啡因 含麩質',sugars:['甜度約半糖'],ices:['固定冰量'],jlj:true}]},
+ {name:'複方茶',desc:'精選茶底＋和風穀麥複方。',items:[
+  {zh:'和風307',p:[50],tags:'含麩質'},
+  {zh:'究極308',p:[42],tags:'含麩質',sugars:['無糖'],noTop:true,note:'固定無糖・不提供加料'},
+  {zh:'朝日覺醒紅茶',p:[40],tags:'含麩質'},
+  {zh:'83蜂見茶',p:[60],variants:['83蜂見茶（紅）','83蜂見茶（307）'],sugars:['甜度約半糖'],ices:['固定冰量']}]},
+ {name:'自然茶',desc:'精選茶底。本區含有微量咖啡因。',items:[
+  {zh:'極上307',p:[37],variants:['極上307（清香）','極上307（濃厚）']},
+  {zh:'舞伎406紅茶',p:[46]},
+  {zh:'大地覺醒紅茶',p:[35]},
+  {zh:'明日清爽茶',p:[35]},
+  {zh:'焙煎黑烏龍',p:[35]},
+  {zh:'茉妃505',p:[40],variants:['茉妃505（清香）','茉妃505（濃厚）']}]},
+ {name:'纖果爽',desc:'精選茶底＋鮮果原汁，本區冰飲限定。',items:[
+  {zh:'柚香覺醒307',p:[67],noHot:true},
+  {zh:'柚香覺醒紅茶',p:[65],noHot:true},
+  {zh:'八曜雙C纖檸露',p:[50],tags:'無咖啡因',noHot:true,jlj:true},
+  {zh:'寧夏307',p:[60],noHot:true},
+  {zh:'明日清爽檸檬茶',p:[55],noHot:true},
+  {zh:'京楓檸檬紅茶',p:[50],noHot:true},
+  {zh:'八曜黑檸檬茶',p:[55],tags:'無咖啡因 含麩質',noHot:true,jlj:true},
+  {zh:'83蜂檸爽爽',p:[65],sugars:['無糖','1分糖','3分糖','5分糖'],ices:['固定冰量'],noTop:true,note:'最高 5 分糖・不提供加料'}]},
+ {name:'極韻白奶茶',desc:'精選茶底＋燕麥奶＋日式焙煎奶精粉，無法做無糖。',items:[
+  {zh:'8YO極韻白奶茶',p:[79],tags:'無咖啡因 含麩質',sugars:['1分糖','3分糖','5分糖','8分糖']},
+  {zh:'308極韻白奶茶',p:[79],tags:'無咖啡因 含麩質',sugars:['1分糖','3分糖','5分糖','8分糖']},
+  {zh:'307極韻白奶茶',p:[89],tags:'含麩質',sugars:['1分糖','3分糖','5分糖','8分糖']},
+  {zh:'406極韻白奶茶',p:[89],tags:'含麩質',sugars:['1分糖','3分糖','5分糖','8分糖']},
+  {zh:'茉心極韻白奶茶',p:[89],tags:'含麩質',sugars:['1分糖','3分糖','5分糖','8分糖']}]},
+ {name:'厚奶茶',desc:'精選茶底＋日式焙煎奶精粉，無法做無糖。',items:[
+  {zh:'覺醒奶茶',p:[55],sugars:['1分糖','3分糖','5分糖','8分糖']},
+  {zh:'匠心奶茶',p:[60],sugars:['1分糖','3分糖','5分糖','8分糖']},
+  {zh:'深煎黑龍奶茶',p:[55],sugars:['1分糖','3分糖','5分糖','8分糖']},
+  {zh:'京彩舞伎奶茶',p:[66],sugars:['1分糖','3分糖','5分糖','8分糖']},
+  {zh:'冬戀奶茶',p:[66],tags:'無咖啡因 含麩質',sugars:['1分糖','3分糖','5分糖','8分糖'],jlj:true},
+  {zh:'308炙燒濃乳',p:[66],tags:'無咖啡因 含麩質',sugars:['1分糖','3分糖','5分糖','8分糖'],jlj:true},
+  {zh:'83蜂潮奶茶',p:[69],tags:'無咖啡因 含麩質',sugars:['甜度約半糖'],ices:['固定冰量']},
+  {zh:'雪匠奶茶',p:[69],tags:'無咖啡因 含麩質',sugars:['1分糖','3分糖','5分糖','8分糖'],ices:['固定冰量'],noTop:true,note:'最低 1 分糖・不提供加料'},
+  {zh:'茉妃雪奶',p:[60],sugars:['1分糖','3分糖','5分糖','8分糖']}]},
+ {name:'鮮乳定製',desc:'精選茶底＋職人鮮乳。茶乳＝茶味濃，乳茶＝奶味濃；乳糖不耐症請斟酌飲用。',items:[
+  {zh:'八曜和風',sz:['茶乳','乳茶'],p:[55,65],tags:'無咖啡因 含麩質',jlj:true},
+  {zh:'牧場覺醒',sz:['茶乳','乳茶'],p:[55,65]},
+  {zh:'牧場黑烏龍',sz:['茶乳','乳茶'],p:[60,70]},
+  {zh:'牧場307',sz:['茶乳','乳茶'],p:[65,75]},
+  {zh:'牧場308',sz:['茶乳','乳茶'],p:[65,75],tags:'無咖啡因 含麩質',jlj:true},
+  {zh:'贅澤香焙歐蕾',sz:['茶乳','乳茶'],p:[66,76]},
+  {zh:'茉妃牧場505',sz:['茶乳','乳茶'],p:[65,75]}]},
+ {name:'乳酸樂多',desc:'精選茶底＋乳酸菌＋職人鮮奶。固定冰量、不提供加料。',items:[
+  {zh:'樂多307',p:[70],ices:['固定冰量'],noTop:true},
+  {zh:'樂多308',p:[70],tags:'無咖啡因 含麩質',ices:['固定冰量'],noTop:true,jlj:true},
+  {zh:'八曜樂多',p:[60],tags:'無咖啡因 含麩質',ices:['固定冰量'],noTop:true,jlj:true},
+  {zh:'明日樂多',p:[60],ices:['固定冰量'],noTop:true},
+  {zh:'茉語樂多',p:[70],ices:['固定冰量'],noTop:true}]},
+ {name:'JLJ 益生菌',desc:'新機能 200 億益生菌。固定冰量、不提供加料。',items:[
+  {zh:'激酵JLJ-蜂凝菌乳茶',p:[79],ices:['固定冰量'],noTop:true,note:'蜂蜜檸檬多多風味'},
+  {zh:'順解JLJ-柚香菌乳茶',p:[79],ices:['固定冰量'],noTop:true,note:'蜂蜜葡萄柚多多風味'}]}
+ ]}
+];
+
 (function(){
 "use strict";
 var $=function(s){return document.querySelector(s)};
 var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
 var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-
 var ENDPOINT=String(window.DAMING_ENDPOINT||'').trim();
-var SUGARS=['正常','少糖','半糖','微糖','1分糖','無糖'];
-var ICES=['正常冰','微冰','去冰','完全去冰'];
-var TOPS=[
-  {id:'pearl',name:'波霸珍珠',p:10},{id:'grass',name:'嫩仙草',p:10},{id:'buck',name:'烤糖蕎麥凍',p:15},
-  {id:'avo',name:'酪梨奶蓋',p:30},{id:'coffee',name:'珈琲粉粿',p:15}
-];
-/* t: p 人氣推薦, m 含鮮奶, c 僅冷飲, n NEW, s 季節限定 */
-var CATS=[
- {id:'c1',name:'嚴選茗品',size:'L',desc:'高山茶種才有的輕盈茶感，尾韻細長，持久回甘。',items:[
-  {id:'a1',zh:'玉露青茶',en:'Taiwanese Ching Tea',p:40,t:'p'},
-  {id:'a2',zh:'桂花青茶',en:'Osmanthus Ching Tea',p:40,t:'p'},
-  {id:'a3',zh:'炭燒青茶',en:'Oolong Tea',p:40,t:''}]},
- {id:'c2',name:'牧場直送',size:'M / L',desc:'經典茶底搭配濃郁好農鮮奶，令人愛不釋口的香醇比例。',items:[
-  {id:'b1',zh:'紅茶拿鐵',en:'Black Tea Latte',p:70,t:'pm'},
-  {id:'b2',zh:'翡翠拿鐵',en:'Jasmine Green Tea Latte',p:70,t:'m'},
-  {id:'b3',zh:'鐵觀音拿鐵',en:'Oolong Tea Latte',p:70,t:'m'},
-  {id:'b4',zh:'仙草嫩奶',en:'Grass Jelly Milk',p:70,t:'pmc',note:'3%奶精 味蕾升華（含奶精）'},
-  {id:'b5',zh:'珍珠粉粿牛奶(珈琲粉粿)',en:'Pearl Milk with Coffee Jelly',p:70,t:'nmc',size:'M'}]},
- {id:'c3',name:'雲朵奶蓋',size:'L',desc:'濃郁酪梨奶蓋佐純粹茶品，成就層次分明的順口奶蓋茶。',items:[
-  {id:'d1',zh:'酪梨奶蓋紅玉',en:'Taiwanese Black Tea With Avocado Milk Foam',p:69,t:'pc'},
-  {id:'d2',zh:'酪梨奶蓋綠茶',en:'Taiwanese Jasmine Green Tea With Avocado Milk Foam',p:69,t:'c'},
-  {id:'d3',zh:'酪梨奶蓋烏龍',en:'Oolong Tea With Avocado Milk Foam',p:69,t:'pc'},
-  {id:'d4',zh:'酪梨奶蓋冬瓜露',en:'Winter Melon Drink With Avocado Milk Foam',p:69,t:'c'}]},
- {id:'c4',name:'經典純粹',size:'L',desc:'嚴選茶葉沖泡，茶感圓潤，濃郁。',items:[
-  {id:'e1',zh:'翡翠綠茶',en:'Jasmine Green Tea',p:40,t:''},
-  {id:'e2',zh:'紅玉紅茶',en:'Taiwanese Black Tea',p:40,t:'p'},
-  {id:'e3',zh:'御品冬瓜露',en:'Winter Melon Drink',p:40,t:''},
-  {id:'e4',zh:'熟成油切蕎麥',en:'Buckwheat Tea',p:40,t:'p',sugar:'none',note:'限無糖'},
-  {id:'e5',zh:'冷萃東方美人',en:'Cold Brew Oriental Beauty Tea',p:55,t:'',noHot:true},
-  {id:'e6',zh:'冷萃半熟金萱',en:'Cold Brew Jin Xuan Tea',p:55,t:'',noHot:true}]},
- {id:'c5',name:'香醇濃郁',size:'L',desc:'順滑柔順的兒時奶茶滋味，找回熟悉的復刻味道。',items:[
-  {id:'f1',zh:'玉露奶青／桂花奶青',en:'Taiwanese Ching Milk Tea / Osmanthus Ching Milk Tea',p:60,t:'pm',variants:[{n:'玉露奶青',p:60},{n:'桂花奶青',p:60}]},
-  {id:'f2',zh:'懷舊經典奶茶／翡翠奶綠／鐵觀音奶茶',en:'Taiwanese Milk Tea (Black Tea / Green Tea / Oolong Tea)',p:55,t:'',variants:[{n:'懷舊經典奶茶',p:55},{n:'翡翠奶綠',p:55},{n:'鐵觀音奶茶',p:55}]},
-  {id:'f3',zh:'熟成蕎麥奶茶',en:'Buckwheat Milk Tea',p:60,t:''},
-  {id:'f4',zh:'珍珠奶茶',en:'Bubble Milk Tea',p:60,t:''},
-  {id:'f5',zh:'烤糖蕎麥凍奶青',en:'Buckwheat Jelly Taiwanese Ching Milk Tea',p:69,t:'pmc'},
-  {id:'f6',zh:'珈琲粉粿蕎麥奶',en:'Coffee Jelly with Buckwheat Milk Tea',p:69,t:'nc'}]},
- {id:'c6',name:'職人手作',size:'L',desc:'高山青茶搭配四季精選水果，繽紛清爽的特調飲品。',items:[
-  {id:'g1',zh:'蘋果玉露青',en:'Apple Taiwanese Ching Tea',p:69,t:'pc',sugar:'min1',note:'最低甜度 1 分糖'},
-  {id:'g2',zh:'老奶奶的鳳梨田',en:'Pineapple Juice Taiwanese Ching Tea',p:69,t:'p',note:'本產品含有堅果類'},
-  {id:'g3',zh:'甘蔗玉露青',en:'Sugar Cane Taiwanese Ching Tea',p:65,t:''},
-  {id:'g4',zh:'冬瓜玉露青',en:'Winter Melon Taiwanese Ching Tea',p:45,t:''},
-  {id:'g5',zh:'纖檸冬瓜露',en:'Lemon Winter Melon Drink',p:55,t:'c'},
-  {id:'g6',zh:'翡翠多多青',en:'Yakult Jasmine Green Tea',p:60,t:'c'},
-  {id:'g7',zh:'檸檬桂花青',en:'Lemon Osmanthus Ching Tea',p:65,t:'pc',sugar:'min1',note:'最低甜度 1 分糖'},
-  {id:'g8',zh:'百香翡翠青',en:'Passion Jasmine Green Tea',p:65,t:'c'},
-  {id:'g9',zh:'柳橙翡翠青',en:'Orange Jasmine Green Tea',p:70,t:'sc',sugar:'min1',note:'最低甜度 1 分糖'}]},
- {id:'c7',name:'匠人茶點',size:'',desc:'午後時光必吃，細細品味生活的甜。',items:[
-  {id:'h1',zh:'酪梨奶蓋泡芙',en:'Avocado Milk Foam Puff',p:85,t:'p',portions:[{n:'2入',p:85},{n:'4入',p:170},{n:'6入',p:255}]},
-  {id:'h2',zh:'花生奶蓋泡芙',en:'Peanut Milk Foam Puff',p:85,t:'',portions:[{n:'2入',p:85},{n:'4入',p:170},{n:'6入',p:255}]}]}
-];
-var ITEM={};
-CATS.forEach(function(c){c.items.forEach(function(i){i.cat=c.id;ITEM[i.id]=i})});
+var HEAD='【飲料揪團訂單】';
+
+/* ---- 整理資料 ---- */
+var BY={},ITEM={};
+STORES.forEach(function(s){
+  BY[s.id]=s;
+  s.cats.forEach(function(c,ci){
+    c.id=s.id+'-c'+ci;
+    c.items.forEach(function(it,ii){
+      it.id=s.id+'-'+ci+'-'+ii;it.store=s;
+      it.tagList=it.tags?it.tags.split(' '):[];
+      it.sizes=(it.sz||s.sizes).map(function(n,k){return{n:n,p:it.p[k]}}).filter(function(x){return x.p!=null});
+      var hot=s.hotOptIn?!!it.hot:!(it.noHot||it.tagList.indexOf('僅冷飲')>-1);
+      it.iceOpts=it.ices?it.ices.map(function(n){return{n:n}}):s.ices.filter(function(o){return hot||!o.hot});
+      var sg=it.sugars||s.sugars;
+      if(it.min1||it.noSugarFree)sg=sg.filter(function(x){return x!=='無糖'});
+      it.sugarOpts=sg;
+      var tp=it.noTop?[]:s.tops.slice();
+      if(it.oat)tp.push({n:'升級燕麥奶',p:{M:10,L:15}});
+      if(it.jlj)tp.push({n:'JLJ益生菌',p:25});
+      it.topOpts=tp;
+      ITEM[it.id]=it;
+    });
+  });
+});
+function topPrice(t,size){return typeof t.p==='number'?t.p:(t.p[size]||0)}
 
 var cart=[];
-try{cart=JSON.parse(store.get('daming-cart')||'[]')}catch(e){cart=[]}
+try{cart=JSON.parse(store.get('tea-cart-v2')||'[]')}catch(e){cart=[]}
 if(!Array.isArray(cart))cart=[];
-cart=cart.filter(function(l){return l&&ITEM[l.itemId]&&l.qty>0});
-function save(){store.set('daming-cart',JSON.stringify(cart))}
-var who=$('#who');
-who.value=store.get('daming-name')||'';
-who.addEventListener('input',function(){store.set('daming-name',who.value.trim())});
+cart=cart.filter(function(l){return l&&BY[l.store]&&l.qty>0&&typeof l.d==='string'});
+function save(){store.set('tea-cart-v2',JSON.stringify(cart))}
 
-/* ---- 菜單 ---- */
-var TAGS={p:['人氣推薦','pop'],m:['含鮮奶',''],c:['僅冷飲',''],n:['NEW','red'],s:['季節限定','red']};
-function tagHtml(it){return it.t.split('').map(function(k){return '<span class="tg '+TAGS[k][1]+'">'+TAGS[k][0]+'</span>'}).join('')}
+var who=$('#who'),who2=$('#who2');
+who.value=who2.value=store.get('daming-name')||'';
+[who,who2].forEach(function(el){el.addEventListener('input',function(){var v=el.value;(el===who?who2:who).value=v;store.set('daming-name',v.trim())})});
+
+/* ---- 首頁 ---- */
+function renderHome(){
+  $('#stores').innerHTML=STORES.map(function(s){
+    var n=0;cart.forEach(function(l){if(l.store===s.id)n+=l.qty});
+    var c=0;s.cats.forEach(function(x){c+=x.items.length});
+    return '<a class="store" href="#'+s.id+'" style="--sa:var(--a-'+s.id+')"><span><b>'+esc(s.name)+'</b><span class="s">'+esc(s.sub)+'・'+c+' 個品項</span></span><span class="go">'+(n?'<span class="cnt">已點 '+n+'</span>':'')+'<span class="arr" aria-hidden="true">›</span></span></a>';
+  }).join('');
+}
+
+/* ---- 店家菜單 ---- */
+var TAGCLS={'人氣推薦':'pop','推薦':'pop','茶師推薦':'pop','NEW':'red','季節限定':'red'};
+var cur=null;
+function priceHtml(it){
+  if(it.sizes.length===1){
+    var z=it.sizes[0];
+    return '<span class="prices"><i>'+esc(z.n)+'</i><b>'+z.p+'</b></span>';
+  }
+  return '<span class="prices">'+it.sizes.map(function(z){return '<i>'+esc(z.n)+'</i><b>'+z.p+'</b>'}).join('')+'</span>';
+}
 function rowHtml(it){
-  return '<li><button class="item" data-act="open" data-id="'+it.id+'"><span><span class="zh">'+esc(it.zh)+tagHtml(it)+'</span><span class="en">'+esc(it.en)+'</span>'+(it.note?'<span class="note">'+esc(it.note)+'</span>':'')+'</span><span class="price">'+it.p+(it.portions?'<small>/2入起</small>':'')+'</span><span class="plus" aria-hidden="true">+</span></button></li>';
+  var tags=it.tagList.map(function(t){return '<span class="tg '+(TAGCLS[t]||'')+'">'+esc(t)+'</span>'}).join('');
+  if(it.store.hotOptIn&&it.hot)tags+='<span class="tg">可熱</span>';
+  return '<li><button class="item" data-act="open" data-id="'+it.id+'"><span><span class="zh">'+esc(it.zh)+tags+'</span>'+(it.en?'<span class="en">'+esc(it.en)+'</span>':'')+(it.note?'<span class="note">'+esc(it.note)+'</span>':'')+'</span>'+priceHtml(it)+'<span class="plus" aria-hidden="true">+</span></button></li>';
+}
+function renderShop(){
+  var s=cur;
+  $('#sName').textContent=s.name;$('#sSub').textContent=s.sub;
+  $('#nav').innerHTML=s.cats.map(function(c){return '<button data-go="'+c.id+'">'+esc(c.name)+'</button>'}).join('');
+  $('#sNotes').innerHTML=s.notes.map(function(n){return '<div>'+esc(n)+'</div>'}).join('')+'<div>價格依紙本菜單整理，實際以店內為準。</div>';
+  $('#q').value='';
+  renderMenu();
 }
 function renderMenu(){
-  var q=$('#q').value.trim().toLowerCase(),html='';
-  CATS.forEach(function(c){
-    var its=c.items.filter(function(i){return !q||(i.zh+i.en+(i.variants||[]).map(function(v){return v.n}).join('')).toLowerCase().indexOf(q)>-1});
+  var s=cur,q=$('#q').value.trim().toLowerCase(),html='';
+  s.cats.forEach(function(c){
+    var its=c.items.filter(function(i){return !q||(i.zh+(i.en||'')+(i.variants||[]).join('')).toLowerCase().indexOf(q)>-1});
     if(!its.length)return;
-    html+='<section class="cat" id="'+c.id+'"><div class="cat-h"><h2>'+c.name+'</h2>'+(c.size?'<span class="sz">'+c.size+'</span>':'')+'</div><p class="desc">'+c.desc+'</p><ul>'+its.map(rowHtml).join('')+'</ul></section>';
+    var szs=s.sizes.filter(function(x){return x}).join(' / ');
+    html+='<section class="cat" id="'+c.id+'"><div class="cat-h"><h2>'+esc(c.name)+'</h2>'+(szs?'<span class="sz">'+esc(szs)+'</span>':'')+'</div>'+(c.desc?'<p class="desc">'+esc(c.desc)+'</p>':'')+'<ul>'+its.map(rowHtml).join('')+'</ul></section>';
   });
   $('#menu').innerHTML=html||'<p class="empty">找不到符合的品項</p>';
-  spy(true);
+  lastCur=null;spy();
 }
-$('#nav').innerHTML=CATS.map(function(c){return '<button data-go="'+c.id+'">'+c.name+'</button>'}).join('');
 $('#q').addEventListener('input',renderMenu);
 var reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 var lastCur=null,tick=false;
-function spy(force){
-  var cur=null;
-  document.querySelectorAll('section.cat').forEach(function(s){if(s.getBoundingClientRect().top<=140)cur=s.id});
-  if(!cur){var f=document.querySelector('section.cat');cur=f?f.id:null}
-  if(cur===lastCur&&!force)return;
-  lastCur=cur;
+function spy(){
+  if(!cur)return;
+  var id=null;
+  document.querySelectorAll('section.cat').forEach(function(s){if(s.getBoundingClientRect().top<=140)id=s.id});
+  if(!id){var f=document.querySelector('section.cat');id=f?f.id:null}
+  if(id===lastCur)return;
+  lastCur=id;
   var nav=$('#nav');
   nav.querySelectorAll('button').forEach(function(b){
-    var on=b.dataset.go===cur;b.classList.toggle('on',on);
+    var on=b.dataset.go===id;b.classList.toggle('on',on);
     if(on)nav.scrollLeft=b.offsetLeft-(nav.clientWidth-b.offsetWidth)/2;
   });
 }
 window.addEventListener('scroll',function(){if(tick)return;tick=true;requestAnimationFrame(function(){tick=false;spy()})},{passive:true});
+$('#nav').addEventListener('click',function(e){
+  var b=e.target.closest('[data-go]');if(!b)return;
+  var s=document.getElementById(b.dataset.go);
+  if(s)s.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});
+});
 
-/* ---- 訂單計算 ---- */
-function nameOf(l){return l.variant||ITEM[l.itemId].zh}
-function desc(l){
-  var it=ITEM[l.itemId];
-  if(it.portions)return nameOf(l)+'／'+l.portion;
-  var p=[nameOf(l)];
-  if(l.hot){p.push('熱飲（中杯）')}else{p.push(it.size||'L');p.push(l.ice)}
-  p.push(l.sugar);
-  if(l.tops.length)p.push('加'+l.tops.map(function(id){return TOPS.filter(function(t){return t.id===id})[0].name}).join('、'));
-  return p.join('／');
-}
-function totals(){var n=0,t=0;cart.forEach(function(l){n+=l.qty;t+=l.unit*l.qty});return{n:n,t:t}}
-function groups(){
-  var gs=[],idx={};
-  cart.forEach(function(l){
-    if(!(l.person in idx)){idx[l.person]=gs.length;gs.push({name:l.person,lines:[],sub:0})}
-    var g=gs[idx[l.person]];g.lines.push(l);g.sub+=l.unit*l.qty;
-  });
+/* ---- 訂單文字 ---- */
+function cartRows(){return cart.map(function(l){return{store:BY[l.store].name,person:l.person,desc:l.d,qty:l.qty,unit:l.unit}})}
+function sumRows(rows){var n=0,t=0;rows.forEach(function(r){n+=r.qty;t+=r.unit*r.qty});return{n:n,t:t}}
+function groupBy(rows,key){
+  var idx=Object.create(null),gs=[];
+  rows.forEach(function(r){var k=r[key];if(!(k in idx)){idx[k]=gs.length;gs.push({name:k,rows:[]})}gs[idx[k]].rows.push(r)});
   return gs;
 }
-var HEAD='【大茗本位製茶堂 訂單】';
-function cartRows(){return cart.map(function(l){return{person:l.person,desc:desc(l),qty:l.qty,unit:l.unit}})}
-function sumRows(rows){var n=0,t=0;rows.forEach(function(r){n+=r.qty;t+=r.unit*r.qty});return{n:n,t:t}}
-function textByPerson(rows){
-  var o=[HEAD],tt=sumRows(rows),idx=Object.create(null),gs=[];
-  rows.forEach(function(r){
-    if(!(r.person in idx)){idx[r.person]=gs.length;gs.push({name:r.person,lines:[],sub:0})}
-    var g=gs[idx[r.person]];g.lines.push(r);g.sub+=r.unit*r.qty;
-  });
-  gs.forEach(function(g){
-    o.push('■ '+g.name);
-    g.lines.forEach(function(r){o.push('・'+r.desc+' ×'+r.qty+'　$'+r.unit*r.qty)});
-    o.push('　小計 $'+g.sub);
-  });
-  o.push('共 '+tt.n+' 項，合計 $'+tt.t);
+function storeOrder(gs){
+  var order=STORES.map(function(s){return s.name});
+  return gs.sort(function(a,b){var x=order.indexOf(a.name),y=order.indexOf(b.name);return (x<0?99:x)-(y<0?99:y)});
+}
+function storeText(g,fmt){
+  var o=['〔'+g.name+'〕'],tt=sumRows(g.rows);
+  if(fmt==='person'){
+    groupBy(g.rows,'person').forEach(function(p){
+      o.push('■ '+p.name+'　$'+sumRows(p.rows).t);
+      p.rows.forEach(function(r){o.push('・'+r.desc+' ×'+r.qty+'　$'+r.unit*r.qty)});
+    });
+  }else{
+    var m=Object.create(null),ord=[];
+    g.rows.forEach(function(r){
+      if(!m[r.desc]){m[r.desc]={q:0,who:Object.create(null),ord:[]};ord.push(r.desc)}
+      var e=m[r.desc];e.q+=r.qty;
+      if(!(r.person in e.who)){e.who[r.person]=0;e.ord.push(r.person)}
+      e.who[r.person]+=r.qty;
+    });
+    ord.forEach(function(k,i){var e=m[k];o.push((i+1)+'. '+k+' ×'+e.q+'（'+e.ord.map(function(p){return e.who[p]>1?p+'×'+e.who[p]:p}).join('、')+'）')});
+  }
+  o.push('小計 '+tt.n+' 項 $'+tt.t);
   return o.join('\n');
 }
-function textMerged(rows){
-  var m=Object.create(null),order=[],tt=sumRows(rows);
-  rows.forEach(function(r){
-    var k=r.desc;
-    if(!m[k]){m[k]={q:0,who:Object.create(null),order:[]};order.push(k)}
-    m[k].q+=r.qty;
-    if(!(r.person in m[k].who)){m[k].who[r.person]=0;m[k].order.push(r.person)}
-    m[k].who[r.person]+=r.qty;
-  });
+function orderText(rows,fmt){
+  var gs=storeOrder(groupBy(rows,'store')),tt=sumRows(rows);
   var o=[HEAD];
-  order.forEach(function(k,i){
-    var e=m[k];
-    o.push((i+1)+'. '+k+' ×'+e.q+'（'+e.order.map(function(p){return e.who[p]>1?p+'×'+e.who[p]:p}).join('、')+'）');
-  });
-  o.push('共 '+tt.n+' 項，合計 $'+tt.t);
+  gs.forEach(function(g){o.push('');o.push(storeText(g,fmt))});
+  if(gs.length>1){o.push('');o.push('全部合計 '+tt.n+' 項 $'+tt.t)}
   return o.join('\n');
 }
 
 /* ---- 彈出面板 ---- */
 var S={mode:null,fmt:'person',confirmClear:false};
 var toastT=null;
-function toast(msg,ms){
-  var t=$('#toast');t.textContent=msg;t.hidden=false;
-  clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},ms||2200);
-}
-function opt(label,on,attrs,dis){return '<button class="opt" aria-pressed="'+(on?'true':'false')+'" '+attrs+(dis?' disabled':'')+'>'+esc(label)+'</button>'}
+function toast(msg,ms){var t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},ms||2200)}
+function opt(label,on,attrs){return '<button class="opt" aria-pressed="'+(on?'true':'false')+'" '+attrs+'>'+esc(label)+'</button>'}
 function grp(title,inner){return '<div class="grp"><h3>'+title+'</h3><div class="opts">'+inner.join('')+'</div></div>'}
-function sugarOpts(it){return it.sugar==='none'?['無糖']:it.sugar==='min1'?SUGARS.slice(0,5):SUGARS}
+function selIce(){return S.it.iceOpts[S.ice]}
 function unitPrice(){
-  var it=S.it,base=it.portions?it.portions[S.pi].p:it.variants?it.variants[S.v].p:it.p;
-  if(!it.portions)S.tops.forEach(function(id){base+=TOPS.filter(function(t){return t.id===id})[0].p});
-  return base;
+  var it=S.it,z=it.sizes[S.sz],p=z.p;
+  if(!it.food){p+=selIce().d||0;S.tops.forEach(function(i){p+=topPrice(it.topOpts[i],z.n)})}
+  return p;
 }
 function openItem(id){
   var it=ITEM[id];
-  S={mode:'item',it:it,v:0,pi:0,hot:false,ice:'正常冰',sugar:it.sugar==='none'?'無糖':'正常',tops:[],qty:1};
+  S={mode:'item',it:it,v:0,sz:it.sizes.length-1,ice:0,sugar:0,tops:[],qty:1,fmt:S.fmt};
+  if(it.food)S.sz=0;
   show();
 }
 function itemSheet(){
-  var it=S.it,hotOk=it.t.indexOf('c')<0&&!it.noHot;
-  var h='<div class="sh-head"><div><div class="sh-t">'+esc(it.zh)+'</div><span class="en">'+esc(it.en)+'</span>'+(it.note?'<span class="note">'+esc(it.note)+'</span>':'')+'</div><button class="x" data-act="close" aria-label="關閉">×</button></div><div class="sh-body">';
-  if(it.variants)h+=grp('口味',it.variants.map(function(v,i){return opt(v.n,S.v===i,'data-act="v" data-i="'+i+'"')}));
-  if(it.portions){
-    h+=grp('份量',it.portions.map(function(v,i){return opt(v.n+'　$'+v.p,S.pi===i,'data-act="pt" data-i="'+i+'"')}));
-  }else{
-    var temps=ICES.map(function(x){return opt(x,!S.hot&&S.ice===x,'data-act="ice" data-v="'+x+'"')});
-    if(hotOk)temps.push(opt('熱飲（中杯 600ml）',S.hot,'data-act="hot"'));
-    h+=grp('冰量',temps);
-    h+=grp('甜度',sugarOpts(it).map(function(x){return opt(x,S.sugar===x,'data-act="sg" data-v="'+x+'"')}));
-    h+=grp('加料',TOPS.map(function(t){return opt(t.name+' +$'+t.p,S.tops.indexOf(t.id)>-1,'data-act="tp" data-v="'+t.id+'"')}));
-    if(S.hot)h+='<p class="fine">熱飲僅提供中杯，價格以現場為準。</p>';
+  var it=S.it,s=it.store,h='<div class="sh-head"><div><div class="sh-t">'+esc(it.zh)+'</div>'+(it.en?'<span class="en">'+esc(it.en)+'</span>':'')+(it.note?'<span class="note">'+esc(it.note)+'</span>':'')+'</div><button class="x" data-act="close" aria-label="關閉">×</button></div><div class="sh-body">';
+  if(it.variants)h+=grp('口味',it.variants.map(function(v,i){return opt(v,S.v===i,'data-act="v" data-i="'+i+'"')}));
+  var named=it.sizes.length>1||it.sizes[0].n;
+  if(named&&!(selIce()&&selIce().noSize&&!it.food))h+=grp(it.food?'份量':'尺寸',it.sizes.map(function(z,i){return opt((z.n||'單一')+'　$'+z.p,S.sz===i,'data-act="sz" data-i="'+i+'"')}));
+  if(!it.food){
+    h+=grp('冰量',it.iceOpts.map(function(o,i){return opt(o.n+(o.d?' +$'+o.d:''),S.ice===i,'data-act="ice" data-i="'+i+'"')}));
+    h+=grp('甜度',it.sugarOpts.map(function(x,i){return opt(x,S.sugar===i,'data-act="sg" data-i="'+i+'"')}));
+    var zn=it.sizes[S.sz].n;
+    if(it.topOpts.length)h+=grp('加料',it.topOpts.map(function(t,i){return opt(t.n+' +$'+topPrice(t,zn),S.tops.indexOf(i)>-1,'data-act="tp" data-i="'+i+'"')}));
+    else h+='<p class="fine">這個品項不提供加料。</p>';
+    if(selIce().hot&&s.hotNote)h+='<p class="fine">'+esc(s.hotNote)+'</p>';
   }
   h+='</div><div class="sh-foot"><div class="step"><button data-act="qm" aria-label="減少">−</button><span>'+S.qty+'</span><button data-act="qp" aria-label="增加">+</button></div><button class="primary" data-act="add"><span>加入訂單</span><span class="n">$'+unitPrice()*S.qty+'</span></button></div>';
   return h;
 }
+function lineDesc(){
+  var it=S.it,z=it.sizes[S.sz],name=it.variants?it.variants[S.v]:it.zh;
+  if(it.food)return name+'／'+z.n;
+  var ice=selIce(),p=[name];
+  if(z.n&&!ice.noSize)p.push(z.n);
+  p.push(ice.n);p.push(it.sugarOpts[S.sugar]);
+  var tp=S.tops.slice().sort(function(a,b){return a-b}).map(function(i){return it.topOpts[i].n});
+  if(tp.length)p.push('加'+tp.join('、'));
+  return p.join('／');
+}
 function addToCart(){
   var it=S.it,person=who.value.trim()||'我';
-  var l={itemId:it.id,person:person,qty:S.qty,unit:unitPrice(),hot:false,ice:'',sugar:'',tops:[],variant:'',portion:''};
-  if(it.portions)l.portion=it.portions[S.pi].n;
-  else{l.hot=S.hot;l.ice=S.hot?'':S.ice;l.sugar=S.sugar;l.tops=S.tops.slice().sort()}
-  if(it.variants)l.variant=it.variants[S.v].n;
-  l.k=[l.itemId,l.variant,l.hot,l.ice,l.sugar,l.tops.join('+'),l.portion,l.person].join('|');
+  var l={store:it.store.id,person:person,d:lineDesc(),unit:unitPrice(),qty:S.qty};
+  l.k=[l.store,l.person,l.d].join('|');
   var ex=cart.filter(function(x){return x.k===l.k})[0];
   if(ex)ex.qty+=l.qty;else cart.push(l);
   save();hide();bar();
-  toast('已加入：'+nameOf(l)+(l.qty>1?' ×'+l.qty:''));
+  toast('已加入：'+l.d.split('／')[0]+(l.qty>1?' ×'+l.qty:''));
 }
 function cartSheet(){
   var tt=totals(),h='<div class="sh-head"><div class="sh-t">我的訂單</div><button class="x" data-act="close" aria-label="關閉">×</button></div><div class="sh-body">';
   if(!cart.length){h+='<p class="empty">還沒有品項，回到菜單點選飲料。</p></div>';return h}
-  groups().forEach(function(g){
-    h+='<div class="person"><b>'+esc(g.name)+'</b><span>$'+g.sub+'</span></div>';
-    g.lines.forEach(function(l){
-      h+='<div class="ln"><div class="d">'+esc(desc(l))+'<small>$'+l.unit+' × '+l.qty+' = $'+l.unit*l.qty+'</small></div><div class="step"><button data-act="dec" data-k="'+esc(l.k)+'" aria-label="減少">−</button><span>'+l.qty+'</span><button data-act="inc" data-k="'+esc(l.k)+'" aria-label="增加">+</button></div></div>';
+  STORES.forEach(function(s){
+    var ls=cart.filter(function(l){return l.store===s.id});if(!ls.length)return;
+    var st=0;ls.forEach(function(l){st+=l.unit*l.qty});
+    h+='<div class="shop" style="--accent:var(--a-'+s.id+')"><b>'+esc(s.name)+'</b><span>$'+st+'</span></div>';
+    var ps=[];ls.forEach(function(l){if(ps.indexOf(l.person)<0)ps.push(l.person)});
+    ps.forEach(function(p){
+      var pl=ls.filter(function(l){return l.person===p}),sub=0;pl.forEach(function(l){sub+=l.unit*l.qty});
+      h+='<div class="person"><b>'+esc(p)+'</b><span>$'+sub+'</span></div>';
+      pl.forEach(function(l){
+        h+='<div class="ln"><div class="d">'+esc(l.d)+'<small>$'+l.unit+' × '+l.qty+' = $'+l.unit*l.qty+'</small></div><div class="step"><button data-act="dec" data-k="'+esc(l.k)+'" aria-label="減少">−</button><span>'+l.qty+'</span><button data-act="inc" data-k="'+esc(l.k)+'" aria-label="增加">+</button></div></div>';
+      });
     });
   });
-  var rws=cartRows(),txt=S.fmt==='person'?textByPerson(rws):textMerged(rws);
+  var txt=orderText(cartRows(),S.fmt);
   h+='<div class="seg">'+opt('依人分組',S.fmt==='person','data-act="fmt" data-v="person"')+opt('合併杯數（給店員）',S.fmt==='merged','data-act="fmt" data-v="merged"')+'</div>';
   h+='<textarea id="txt" readonly rows="'+Math.min(14,txt.split('\n').length+1)+'" aria-label="訂單文字">'+esc(txt)+'</textarea></div>';
   var clr='<button class="ghost" data-act="clear">'+(S.confirmClear?'再按一次清空':'清空')+'</button>';
@@ -379,6 +643,7 @@ function cartSheet(){
   else h+='<div class="sh-foot">'+clr+'<button class="primary" data-act="copy"><span>複製訂單</span><span class="n">共 '+tt.n+' 項 $'+tt.t+'</span></button></div>';
   return h;
 }
+function totals(){var n=0,t=0;cart.forEach(function(l){n+=l.qty;t+=l.unit*l.qty});return{n:n,t:t}}
 function paint(){
   var sh=$('#sheet'),st=sh.querySelector('.sh-body'),top=st?st.scrollTop:0;
   sh.innerHTML=S.mode==='item'?itemSheet():cartSheet();
@@ -387,8 +652,7 @@ function paint(){
 function show(){
   $('#ov').hidden=false;$('#sheet').hidden=false;
   document.documentElement.style.overflow='hidden';
-  paint();$('#sheet').scrollTop=0;
-  var b=$('#sheet .sh-body');if(b)b.scrollTop=0;
+  $('#sheet').innerHTML='';paint();
   $('#sheet').focus({preventScroll:true});
 }
 function hide(){
@@ -401,65 +665,17 @@ function bar(){
   $('#bar').hidden=!tt.n||location.hash==='#admin';
   $('#barL').textContent='查看訂單・'+tt.n+' 項';
   $('#barR').textContent='$'+tt.t;
+  if(!$('#home').hidden)renderHome();
 }
 function copyFrom(sel){
   var ta=$(sel);if(!ta)return;
   var done=function(){toast('已複製，貼到 LINE 就能用')};
   var fallback=function(){ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);toast('已選取文字，請長按後選擇拷貝')};
-  try{
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,fallback)}else fallback();
-  }catch(e){fallback()}
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,fallback)}else fallback()}catch(e){fallback()}
 }
 function findLine(k){return cart.filter(function(l){return l.k===k})[0]}
 
-document.addEventListener('click',function(e){
-  var el=e.target.closest('[data-act]');
-  if(!el)return;
-  var a=el.dataset.act,d=el.dataset;
-  if(a==='open'){openItem(d.id);return}
-  if(a==='akey'){var kv=$('#akey');if(kv)store.set('daming-key',kv.value.trim());aload();return}
-  if(a==='arefresh'){aload();return}
-  if(a==='afmt'){A.fmt=d.v;paintAdmin();return}
-  if(a==='acopy'){copyFrom('#atxt');return}
-  if(a==='adel'){apost({action:'delete',batch:d.b});return}
-  if(a==='aclr'){
-    if(A.confirm){A.confirm=false;apost({action:'clear'})}
-    else{A.confirm=true;paintAdmin();setTimeout(function(){if(A.confirm){A.confirm=false;paintAdmin()}},3000)}
-    return;
-  }
-  if(a==='submit'){submitOrder();return}
-  if(a==='cart'){S={mode:'cart',fmt:S.fmt||'person',confirmClear:false};show();return}
-  if(a==='close'){hide();return}
-  if(a==='v')S.v=+d.i;
-  else if(a==='pt')S.pi=+d.i;
-  else if(a==='ice'){S.ice=d.v;S.hot=false}
-  else if(a==='hot')S.hot=true;
-  else if(a==='sg')S.sugar=d.v;
-  else if(a==='tp'){var i=S.tops.indexOf(d.v);if(i>-1)S.tops.splice(i,1);else S.tops.push(d.v)}
-  else if(a==='qm')S.qty=Math.max(1,S.qty-1);
-  else if(a==='qp')S.qty=Math.min(20,S.qty+1);
-  else if(a==='add'){addToCart();return}
-  else if(a==='fmt')S.fmt=d.v;
-  else if(a==='inc'){var l=findLine(d.k);if(l){l.qty=Math.min(99,l.qty+1);save()}}
-  else if(a==='dec'){var l2=findLine(d.k);if(l2){l2.qty--;if(l2.qty<=0)cart=cart.filter(function(x){return x!==l2});save()}}
-  else if(a==='copy'){copyFrom('#txt');return}
-  else if(a==='clear'){
-    if(S.confirmClear){cart=[];save();hide();bar();toast('訂單已清空');return}
-    S.confirmClear=true;paint();
-    setTimeout(function(){if(S.mode==='cart'&&S.confirmClear){S.confirmClear=false;paint()}},3000);
-    return;
-  }
-  if(S.mode==='cart'&&!cart.length){bar();paint();return}
-  paint();bar();
-});
-$('#nav').addEventListener('click',function(e){
-  var b=e.target.closest('[data-go]');if(!b)return;
-  var s=document.getElementById(b.dataset.go);
-  if(s)s.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});
-});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'&&S.mode)hide()});
-
-/* ---- 送出訂單與主揪後台（需要 Apps Script 網址） ---- */
+/* ---- 送出與後台 ---- */
 function post(body){
   return fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){return r.json()});
 }
@@ -482,7 +698,7 @@ function aload(){
   post({action:'list',key:adminKey()}).then(function(r){
     A.loading=false;
     if(!r||!r.ok){A.rows=null;A.err=(r&&r.error==='forbidden')?'密碼不正確':'讀取失敗，請稍後再試'}
-    else A.rows=r.rows.map(function(x){return{ts:String(x[0]),batch:String(x[1]),person:String(x[2]),desc:String(x[3]),qty:+x[4]||0,unit:+x[5]||0}});
+    else A.rows=r.rows.map(function(x){return{ts:String(x[0]),batch:String(x[1]),store:String(x[2]||'大茗本位製茶堂'),person:String(x[3]),desc:String(x[4]),qty:+x[5]||0,unit:+x[6]||0}});
     paintAdmin();
   },function(){A.loading=false;A.rows=null;A.err='連不上試算表，請確認網址設定與網路';paintAdmin()});
 }
@@ -492,8 +708,8 @@ function apost(extra){
 }
 function paintAdmin(){
   var el=$('#admin');if(el.hidden)return;
-  var h='<div class="adm-h"><h2>主揪後台</h2><a href="#">回到菜單</a></div>';
-  if(!ENDPOINT){el.innerHTML=h+'<p class="empty">尚未設定試算表網址。請把 Apps Script 的網址貼進 index.html 最上面的 DAMING_ENDPOINT。</p>';return}
+  var h='<div class="adm-h"><h2>主揪後台</h2><a href="#">回到店家</a></div>';
+  if(!ENDPOINT){el.innerHTML=h+'<p class="empty">尚未設定試算表網址。請把 Apps Script 的網址貼進 index.html 裡的 DAMING_ENDPOINT。</p>';return}
   if(!A.rows){
     h+='<div class="field"><label for="akey">密碼</label><input id="akey" type="password" autocomplete="off" value="'+esc(adminKey())+'" placeholder="Apps Script 裡設定的 ADMIN_KEY"></div>';
     h+='<div class="seg"><button class="primary" data-act="akey"'+(A.loading?' disabled':'')+'><span>'+(A.loading?'讀取中…':'查看訂單')+'</span></button></div>';
@@ -502,41 +718,107 @@ function paintAdmin(){
   }
   var rows=A.rows,tt=sumRows(rows),ppl=Object.create(null),np=0;
   rows.forEach(function(r){if(!ppl[r.person]){ppl[r.person]=1;np++}});
-  h+='<div class="stats"><div><b>'+np+'</b><span>人</span></div><div><b>'+tt.n+'</b><span>項</span></div><div><b>$'+tt.t+'</b><span>總金額</span></div></div>';
+  var gs=storeOrder(groupBy(rows,'store'));
+  h+='<div class="stats"><div><b>'+gs.length+'</b><span>家店</span></div><div><b>'+np+'</b><span>人</span></div><div><b>'+tt.n+'</b><span>項</span></div><div><b>$'+tt.t+'</b><span>總金額</span></div></div>';
+  if(gs.length)h+='<div class="chips">'+gs.map(function(g){var t=sumRows(g.rows);return '<span>'+esc(g.name)+'<b>'+t.n+' 項 $'+t.t+'</b></span>'}).join('')+'</div>';
   if(!rows.length){
     h+='<p class="empty">還沒有人送出訂單。</p>';
   }else{
-    var txt=A.fmt==='person'?textByPerson(rows):textMerged(rows);
     h+='<div class="seg">'+opt('依人分組',A.fmt==='person','data-act="afmt" data-v="person"')+opt('合併杯數（給店員）',A.fmt==='merged','data-act="afmt" data-v="merged"')+'</div>';
-    h+='<textarea id="atxt" readonly rows="'+Math.min(16,txt.split('\n').length+1)+'" aria-label="訂單文字">'+esc(txt)+'</textarea>';
-    h+='<div class="seg"><button class="primary" data-act="acopy"><span>複製訂單</span><span class="n">共 '+tt.n+' 項 $'+tt.t+'</span></button></div>';
-    var bs=[],bi=Object.create(null);
-    rows.forEach(function(r){
-      if(!(r.batch in bi)){bi[r.batch]=bs.length;bs.push({id:r.batch,ts:r.ts,lines:[],sub:0})}
-      var b=bs[bi[r.batch]];b.lines.push(r);b.sub+=r.unit*r.qty;
+    gs.forEach(function(g,i){
+      var t=sumRows(g.rows),sid='';STORES.forEach(function(s){if(s.name===g.name)sid=s.id});
+      var txt=storeText(g,A.fmt);
+      h+='<div class="shop"'+(sid?' style="--accent:var(--a-'+sid+')"':'')+'><b>'+esc(g.name)+'</b><span>'+t.n+' 項 $'+t.t+'</span></div>';
+      h+='<textarea id="atxt'+i+'" readonly rows="'+Math.min(14,txt.split('\n').length+1)+'" aria-label="'+esc(g.name)+' 訂單文字">'+esc(txt)+'</textarea>';
+      h+='<div class="bt"><button class="sec" data-act="acopy" data-i="'+i+'">複製 '+esc(g.name)+' 的訂單</button></div>';
     });
+    var all=orderText(rows,A.fmt);
+    h+='<textarea id="atxtall" hidden aria-hidden="true">'+esc(all)+'</textarea>';
+    h+='<div class="seg"><button class="primary" data-act="acopy" data-i="all"><span>複製全部店家</span><span class="n">$'+tt.t+'</span></button></div>';
+    var bs=groupBy(rows,'batch');
     h+='<div class="grp"><h3>每筆送單（新的在上面）</h3></div>';
     bs.reverse().forEach(function(b){
-      h+='<div class="person"><b>'+esc(b.ts)+'</b><span>$'+b.sub+'</span></div>';
-      b.lines.forEach(function(r){h+='<div class="ln"><div class="d">'+esc(r.person)+'｜'+esc(r.desc)+'<small>×'+r.qty+'・$'+r.unit*r.qty+'</small></div></div>'});
-      h+='<div class="bt"><span></span><button class="ghost" data-act="adel" data-b="'+esc(b.id)+'">刪除這筆送單</button></div>';
+      var bt=sumRows(b.rows);
+      h+='<div class="person"><b>'+esc(b.rows[0].ts)+'・'+esc(b.rows[0].person)+'</b><span>$'+bt.t+'</span></div>';
+      b.rows.forEach(function(r){h+='<div class="ln"><div class="d">'+esc(r.store)+'｜'+esc(r.person)+'｜'+esc(r.desc)+'<small>×'+r.qty+'・$'+r.unit*r.qty+'</small></div></div>'});
+      h+='<div class="bt"><button class="ghost" data-act="adel" data-b="'+esc(b.name)+'">刪除這筆送單</button></div>';
     });
   }
   h+='<div class="adm-act"><button class="sec" data-act="arefresh">重新整理</button><button class="ghost" data-act="aclr">'+(A.confirm?'再按一次清空全部':'清空全部（開新一輪）')+'</button></div>';
   el.innerHTML=h;
 }
-document.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target&&e.target.id==='akey'){var kv=$('#akey');store.set('daming-key',kv.value.trim());aload()}});
+function copyAll(){
+  var ta=$('#atxtall');if(!ta)return;
+  var v=ta.value;
+  var fallback=function(){toast('無法自動複製，請改用各店家的複製按鈕')};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(v).then(function(){toast('已複製全部店家的訂單')},fallback)}else fallback()}catch(e){fallback()}
+}
+
+/* ---- 事件 ---- */
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-act]');
+  if(!el)return;
+  var a=el.dataset.act,d=el.dataset;
+  if(a==='open'){openItem(d.id);return}
+  if(a==='cart'){S={mode:'cart',fmt:S.fmt||'person',confirmClear:false};show();return}
+  if(a==='close'){hide();return}
+  if(a==='akey'){var kv=$('#akey');if(kv)store.set('daming-key',kv.value.trim());aload();return}
+  if(a==='arefresh'){aload();return}
+  if(a==='afmt'){A.fmt=d.v;paintAdmin();return}
+  if(a==='acopy'){if(d.i==='all')copyAll();else copyFrom('#atxt'+d.i);return}
+  if(a==='adel'){apost({action:'delete',batch:d.b});return}
+  if(a==='aclr'){
+    if(A.confirm){A.confirm=false;apost({action:'clear'})}
+    else{A.confirm=true;paintAdmin();setTimeout(function(){if(A.confirm){A.confirm=false;paintAdmin()}},3000)}
+    return;
+  }
+  if(a==='submit'){submitOrder();return}
+  if(a==='v')S.v=+d.i;
+  else if(a==='sz')S.sz=+d.i;
+  else if(a==='ice')S.ice=+d.i;
+  else if(a==='sg')S.sugar=+d.i;
+  else if(a==='tp'){var i=+d.i,j=S.tops.indexOf(i);if(j>-1)S.tops.splice(j,1);else S.tops.push(i)}
+  else if(a==='qm')S.qty=Math.max(1,S.qty-1);
+  else if(a==='qp')S.qty=Math.min(20,S.qty+1);
+  else if(a==='add'){addToCart();return}
+  else if(a==='fmt')S.fmt=d.v;
+  else if(a==='inc'){var l=findLine(d.k);if(l){l.qty=Math.min(99,l.qty+1);save()}}
+  else if(a==='dec'){var l2=findLine(d.k);if(l2){l2.qty--;if(l2.qty<=0)cart=cart.filter(function(x){return x!==l2});save()}}
+  else if(a==='copy'){copyFrom('#txt');return}
+  else if(a==='clear'){
+    if(S.confirmClear){cart=[];save();hide();bar();toast('訂單已清空');return}
+    S.confirmClear=true;paint();
+    setTimeout(function(){if(S.mode==='cart'&&S.confirmClear){S.confirmClear=false;paint()}},3000);
+    return;
+  }
+  else return;
+  if(S.mode==='cart'&&!cart.length){bar();paint();return}
+  if(S.mode)paint();
+  bar();
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&S.mode)hide();
+  if(e.key==='Enter'&&e.target&&e.target.id==='akey'){store.set('daming-key',e.target.value.trim());aload()}
+});
+
 function route(){
-  var adm=location.hash==='#admin';
-  $('#front').hidden=adm;$('#admin').hidden=!adm;
-  if(adm){hide();paintAdmin();if(ENDPOINT&&adminKey()&&!A.rows&&!A.loading)aload()}
-  else window.scrollTo(0,0);
+  var h=location.hash.replace('#',''),adm=h==='admin',s=BY[h]||null;
+  hide();
+  $('#home').hidden=adm||!!s;$('#shop').hidden=!s;$('#admin').hidden=!adm;
+  if(s){
+    document.documentElement.setAttribute('data-store',s.id);
+    if(cur!==s){cur=s;renderShop()}
+  }else{
+    document.documentElement.removeAttribute('data-store');
+    cur=null;
+  }
+  if(adm){paintAdmin();if(ENDPOINT&&adminKey()&&!A.rows&&!A.loading)aload()}
+  window.scrollTo(0,0);
   bar();
 }
 window.addEventListener('hashchange',route);
 if(ENDPOINT)$('#hint').textContent='每個人先輸入自己的名字再點，按「送出訂單」後，主揪會在後台看到。';
-
-renderMenu();bar();route();
+renderHome();route();
 })();
 </script>
 </body></html>
