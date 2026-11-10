@@ -202,53 +202,61 @@ var STORES=[
 {id:'daming',name:'大茗本位製茶堂',short:'大茗',sub:'北部菜單・L 杯為主・熱飲僅中杯',sizes:['L'],
  sugars:['正常','少糖','半糖','微糖','1分糖','無糖'],
  ices:[{n:'正常冰'},{n:'微冰'},{n:'去冰'},{n:'完全去冰'},{n:'熱飲（中杯600ml）',hot:true,noSize:true}],
- tops:[{n:'波霸珍珠',p:10},{n:'嫩仙草',p:10},{n:'烤糖蕎麥凍',p:15},{n:'酪梨奶蓋',p:30},{n:'珈琲粉粿',p:15}],
+ tops:[{n:'波霸珍珠',p:10},{n:'嫩仙草',p:10},{n:'烤糖蕎麥凍',p:20},{n:'酪梨奶蓋',p:35},{n:'珈琲粉粿',p:20}],
  hotNote:'熱飲僅提供中杯，價格以現場為準。',
- notes:['人氣推薦、含鮮奶、僅冷飲依菜單標示；無咖啡因飲品請詢問店員。','熱飲僅提供中杯（600ml），價格以現場為準。'],
+ notes:['人氣推薦、含鮮奶、僅冷飲依現場菜單標示；無咖啡因飲品請詢問店員。','熱飲僅提供中杯（600ml），價格以現場為準。'],
  cats:[
  {name:'嚴選茗品',desc:'高山茶種才有的輕盈茶感，尾韻細長，持久回甘。',items:[
   {zh:'玉露青茶',en:'Taiwanese Ching Tea',p:[40],tags:'人氣推薦'},
-  {zh:'桂花青茶',en:'Osmanthus Ching Tea',p:[40],tags:'人氣推薦'},
+  {zh:'桂花青茶',en:'Osmanthus Ching Tea',p:[45],tags:'人氣推薦'},
   {zh:'炭燒青茶',en:'Oolong Tea',p:[40]}]},
+ {name:'經典純粹',desc:'嚴選茶葉沖泡，茶感圓潤，濃郁。',items:[
+  {zh:'翡翠綠茶',en:'Jasmine Green Tea',p:[40]},
+  {zh:'紅玉紅茶',en:'Taiwanese Black Tea',p:[40],tags:'人氣推薦'},
+  {zh:'御品冬瓜露',en:'Winter Melon Drink',p:[40]},
+  {zh:'熟成油切蕎麥',en:'Buckwheat Tea',p:[40],tags:'人氣推薦',variants:['熟成油切蕎麥（含咖啡因）','熟成油切蕎麥（無咖啡因）'],note:'可選含咖啡因／無咖啡因'},
+  {zh:'冷萃東方美人',en:'Cold Brew Oriental Beauty Tea',p:[59],noHot:true},
+  {zh:'冷萃半熟金萱',en:'Cold Brew Jin Xuan Tea',p:[59],noHot:true}]},
+ {name:'香醇濃郁',desc:'順滑柔順的兒時奶茶滋味，找回熟悉的復刻味道。',items:[
+  {zh:'玉露奶青／桂花奶青',en:'Taiwanese Ching Milk Tea / Osmanthus Ching Milk Tea',p:[65],tags:'人氣推薦 含鮮奶',variants:['玉露奶青','桂花奶青']},
+  {zh:'懷舊經典奶茶／翡翠奶綠／鐵觀音奶茶',en:'Taiwanese Milk Tea (Black / Green / Oolong)',p:[60],variants:['懷舊經典奶茶','翡翠奶綠','鐵觀音奶茶']},
+  {zh:'熟成蕎麥奶茶',en:'Buckwheat Milk Tea',p:[65],variants:['熟成蕎麥奶茶（含咖啡因）','熟成蕎麥奶茶（無咖啡因）'],note:'可選含咖啡因／無咖啡因'},
+  {zh:'珍珠奶茶',en:'Bubble Milk Tea',p:[65]},
+  {zh:'烤糖蕎麥凍奶青',en:'Buckwheat Jelly Taiwanese Ching Milk Tea',p:[75],tags:'人氣推薦 含鮮奶 僅冷飲'},
+  {zh:'珈琲粉粿蕎麥奶',en:'Coffee Jelly with Buckwheat Milk Tea',p:[75],tags:'人氣推薦 僅冷飲'}]},
+ {name:'抹茶系列',sz:'M / L',desc:'濃醇抹茶，回甘不苦澀。',items:[
+  {zh:'青抹浮島',en:'Foam Matcha Latte',sz:['M','L'],p:[89,null],tags:'NEW 人氣推薦 含鮮奶 僅冷飲'},
+  {zh:'抹一點酸',en:'Matcha Yogurt Drink',sz:['M','L'],p:[99,null],tags:'NEW 人氣推薦 含鮮奶 僅冷飲',note:'現場曾標示完售，點之前先確認還有沒有'},
+  {zh:'抹茶拿鐵 ESPRESSO',en:'Matcha Espresso Latte',sz:['M','L'],p:[99,null],tags:'NEW 人氣推薦 含鮮奶 僅冷飲'},
+  {zh:'抹茶拿鐵',en:'Matcha Latte',sz:['M','L'],p:[79,89],tags:'NEW 含鮮奶'},
+  {zh:'青抹蕎麥凍奶',en:'Buckwheat Jelly Matcha Milk Tea',sz:['M','L'],p:[null,89],tags:'NEW 僅冷飲'}]},
+ {name:'期間限定',sz:'M / L',desc:'期間限定才能喝到的美好風味。',items:[
+  {zh:'VERISH 芒美特調',en:'Mango Americano',sz:['M','L'],p:[79,null],tags:'NEW 僅冷飲'},
+  {zh:'芒果青',en:'Mango Jasmine Green Tea',sz:['M','L'],p:[null,70],tags:'季節限定 僅冷飲',note:'本產品含有堅果類'}]},
+ {name:'雲朵奶蓋',desc:'濃郁酪梨奶蓋佐純粹茶品，成就層次分明的順口奶蓋茶。',items:[
+  {zh:'酪梨奶蓋紅玉',en:'Taiwanese Black Tea With Avocado Milk Foam',p:[70],tags:'人氣推薦 含鮮奶 僅冷飲'},
+  {zh:'酪梨奶蓋綠茶',en:'Taiwanese Jasmine Green Tea With Avocado Milk Foam',p:[70],tags:'含鮮奶 僅冷飲'},
+  {zh:'酪梨奶蓋烏龍',en:'Oolong Tea With Avocado Milk Foam',p:[70],tags:'人氣推薦 含鮮奶 僅冷飲'},
+  {zh:'酪梨奶蓋冬瓜露',en:'Winter Melon Drink With Avocado Milk Foam',p:[70],tags:'含鮮奶 僅冷飲'}]},
+ {name:'匠人茶點',sz:'',desc:'午後時光必吃，細細品味生活的甜。',items:[
+  {zh:'酪梨奶蓋泡芙',en:'Avocado Milk Foam Puff',sz:['2入','4入','6入'],p:[85,170,255],tags:'人氣推薦',food:true}]},
+ {name:'職人手作',desc:'高山青茶搭配四季精選水果，繽紛清爽的特調飲品。',items:[
+  {zh:'蘋果玉露青',en:'Apple Taiwanese Ching Tea',p:[70],tags:'人氣推薦 僅冷飲',min1:true,note:'最低甜度 1 分糖'},
+  {zh:'老奶奶的鳳梨田',en:'Pineapple Juice Taiwanese Ching Tea',p:[70],tags:'人氣推薦',note:'本產品含有堅果類'},
+  {zh:'甘蔗玉露青',en:'Sugar Cane Taiwanese Ching Tea',p:[65]},
+  {zh:'冬瓜玉露青',en:'Winter Melon Taiwanese Ching Tea',p:[50]},
+  {zh:'纖檸冬瓜露',en:'Lemon Winter Melon Drink',p:[55],tags:'僅冷飲'},
+  {zh:'翡翠多多青',en:'Yakult Jasmine Green Tea',p:[60],tags:'僅冷飲'},
+  {zh:'檸檬桂花青',en:'Lemon Osmanthus Ching Tea',p:[69],tags:'人氣推薦 僅冷飲',min1:true,note:'最低甜度 1 分糖'},
+  {zh:'柳橙翡翠青',en:'Orange Jasmine Green Tea',p:[70],tags:'季節限定 僅冷飲',min1:true,note:'最低甜度 1 分糖'}]},
  {name:'牧場直送',desc:'經典茶底搭配濃郁好農鮮奶，令人愛不釋口的香醇比例。',items:[
   {zh:'紅茶拿鐵',en:'Black Tea Latte',p:[70],tags:'人氣推薦 含鮮奶'},
   {zh:'翡翠拿鐵',en:'Jasmine Green Tea Latte',p:[70],tags:'含鮮奶'},
   {zh:'鐵觀音拿鐵',en:'Oolong Tea Latte',p:[70],tags:'含鮮奶'},
   {zh:'仙草嫩奶',en:'Grass Jelly Milk',p:[70],tags:'人氣推薦 含鮮奶 僅冷飲',note:'3%奶精 味蕾升華（含奶精）'},
-  {zh:'珍珠粉粿牛奶(珈琲粉粿)',en:'Pearl Milk with Coffee Jelly',sz:['M'],p:[70],tags:'NEW 含鮮奶 僅冷飲'}]},
- {name:'雲朵奶蓋',desc:'濃郁酪梨奶蓋佐純粹茶品，成就層次分明的順口奶蓋茶。',items:[
-  {zh:'酪梨奶蓋紅玉',en:'Taiwanese Black Tea With Avocado Milk Foam',p:[69],tags:'人氣推薦 僅冷飲'},
-  {zh:'酪梨奶蓋綠茶',en:'Taiwanese Jasmine Green Tea With Avocado Milk Foam',p:[69],tags:'僅冷飲'},
-  {zh:'酪梨奶蓋烏龍',en:'Oolong Tea With Avocado Milk Foam',p:[69],tags:'人氣推薦 僅冷飲'},
-  {zh:'酪梨奶蓋冬瓜露',en:'Winter Melon Drink With Avocado Milk Foam',p:[69],tags:'僅冷飲'}]},
- {name:'經典純粹',desc:'嚴選茶葉沖泡，茶感圓潤，濃郁。',items:[
-  {zh:'翡翠綠茶',en:'Jasmine Green Tea',p:[40]},
-  {zh:'紅玉紅茶',en:'Taiwanese Black Tea',p:[40],tags:'人氣推薦'},
-  {zh:'御品冬瓜露',en:'Winter Melon Drink',p:[40]},
-  {zh:'熟成油切蕎麥',en:'Buckwheat Tea',p:[40],tags:'人氣推薦',sugars:['無糖'],note:'限無糖'},
-  {zh:'冷萃東方美人',en:'Cold Brew Oriental Beauty Tea',p:[55],noHot:true},
-  {zh:'冷萃半熟金萱',en:'Cold Brew Jin Xuan Tea',p:[55],noHot:true}]},
- {name:'香醇濃郁',desc:'順滑柔順的兒時奶茶滋味，找回熟悉的復刻味道。',items:[
-  {zh:'玉露奶青／桂花奶青',en:'Taiwanese Ching Milk Tea / Osmanthus Ching Milk Tea',p:[60],tags:'人氣推薦 含鮮奶',variants:['玉露奶青','桂花奶青']},
-  {zh:'懷舊經典奶茶／翡翠奶綠／鐵觀音奶茶',en:'Taiwanese Milk Tea (Black / Green / Oolong)',p:[55],variants:['懷舊經典奶茶','翡翠奶綠','鐵觀音奶茶']},
-  {zh:'熟成蕎麥奶茶',en:'Buckwheat Milk Tea',p:[60]},
-  {zh:'珍珠奶茶',en:'Bubble Milk Tea',p:[60]},
-  {zh:'烤糖蕎麥凍奶青',en:'Buckwheat Jelly Taiwanese Ching Milk Tea',p:[69],tags:'人氣推薦 含鮮奶 僅冷飲'},
-  {zh:'珈琲粉粿蕎麥奶',en:'Coffee Jelly with Buckwheat Milk Tea',p:[69],tags:'NEW 僅冷飲'}]},
- {name:'職人手作',desc:'高山青茶搭配四季精選水果，繽紛清爽的特調飲品。',items:[
-  {zh:'蘋果玉露青',en:'Apple Taiwanese Ching Tea',p:[69],tags:'人氣推薦 僅冷飲',min1:true,note:'最低甜度 1 分糖'},
-  {zh:'老奶奶的鳳梨田',en:'Pineapple Juice Taiwanese Ching Tea',p:[69],tags:'人氣推薦',note:'本產品含有堅果類'},
-  {zh:'甘蔗玉露青',en:'Sugar Cane Taiwanese Ching Tea',p:[65]},
-  {zh:'冬瓜玉露青',en:'Winter Melon Taiwanese Ching Tea',p:[45]},
-  {zh:'纖檸冬瓜露',en:'Lemon Winter Melon Drink',p:[55],tags:'僅冷飲'},
-  {zh:'翡翠多多青',en:'Yakult Jasmine Green Tea',p:[60],tags:'僅冷飲'},
-  {zh:'檸檬桂花青',en:'Lemon Osmanthus Ching Tea',p:[65],tags:'人氣推薦 僅冷飲',min1:true,note:'最低甜度 1 分糖'},
-  {zh:'百香翡翠青',en:'Passion Jasmine Green Tea',p:[65],tags:'僅冷飲'},
-  {zh:'柳橙翡翠青',en:'Orange Jasmine Green Tea',p:[70],tags:'季節限定 僅冷飲',min1:true,note:'最低甜度 1 分糖'}]},
- {name:'匠人茶點',desc:'午後時光必吃，細細品味生活的甜。',items:[
-  {zh:'酪梨奶蓋泡芙',en:'Avocado Milk Foam Puff',sz:['2入','4入','6入'],p:[85,170,255],tags:'人氣推薦',food:true},
-  {zh:'花生奶蓋泡芙',en:'Peanut Milk Foam Puff',sz:['2入','4入','6入'],p:[85,170,255],food:true}]}
+  {zh:'珍珠粉粿牛奶(珈琲粉粿)',en:'Pearl Milk with Coffee Jelly',p:[75],tags:'人氣推薦 含鮮奶 僅冷飲'}]}
  ]},
+
 
 {id:'qingshan',name:'青山',short:'青山',sub:'M / L 兩種尺寸・可做常溫、溫熱',sizes:['M','L'],
  sugars:['正常','少糖','半糖','微糖','1分糖','無糖'],
@@ -497,7 +505,7 @@ function renderMenu(){
   s.cats.forEach(function(c){
     var its=c.items.filter(function(i){return !q||(i.zh+(i.en||'')+(i.variants||[]).join('')).toLowerCase().indexOf(q)>-1});
     if(!its.length)return;
-    var szs=s.sizes.filter(function(x){return x}).join(' / ');
+    var szs=c.sz!=null?c.sz:s.sizes.filter(function(x){return x}).join(' / ');
     html+='<section class="cat" id="'+c.id+'"><div class="cat-h"><h2>'+esc(c.name)+'</h2>'+(szs?'<span class="sz">'+esc(szs)+'</span>':'')+'</div>'+(c.desc?'<p class="desc">'+esc(c.desc)+'</p>':'')+'<ul>'+its.map(rowHtml).join('')+'</ul></section>';
   });
   $('#menu').innerHTML=html||'<p class="empty">找不到符合的品項</p>';
@@ -573,8 +581,13 @@ function toast(msg,ms){var t=$('#toast');t.textContent=msg;t.hidden=false;clearT
 function opt(label,on,attrs){return '<button class="opt" aria-pressed="'+(on?'true':'false')+'" '+attrs+'>'+esc(label)+'</button>'}
 function grp(title,inner){return '<div class="grp"><h3>'+title+'</h3><div class="opts">'+inner.join('')+'</div></div>'}
 function selIce(){return S.it.iceOpts[S.ice]}
+function curSize(){
+  var it=S.it,ice=it.food?null:selIce();
+  if(ice&&ice.noSize){for(var i=0;i<it.sizes.length;i++)if(it.sizes[i].n==='M')return it.sizes[i]}
+  return it.sizes[S.sz];
+}
 function unitPrice(){
-  var it=S.it,z=it.sizes[S.sz],p=z.p;
+  var it=S.it,z=curSize(),p=z.p;
   if(!it.food){p+=selIce().d||0;S.tops.forEach(function(i){p+=topPrice(it.topOpts[i],z.n)})}
   return p;
 }
@@ -592,7 +605,7 @@ function itemSheet(){
   if(!it.food){
     h+=grp('冰量',it.iceOpts.map(function(o,i){return opt(o.n+(o.d?' +$'+o.d:''),S.ice===i,'data-act="ice" data-i="'+i+'"')}));
     h+=grp('甜度',it.sugarOpts.map(function(x,i){return opt(x,S.sugar===i,'data-act="sg" data-i="'+i+'"')}));
-    var zn=it.sizes[S.sz].n;
+    var zn=curSize().n;
     if(it.topOpts.length)h+=grp('加料',it.topOpts.map(function(t,i){return opt(t.n+' +$'+topPrice(t,zn),S.tops.indexOf(i)>-1,'data-act="tp" data-i="'+i+'"')}));
     else h+='<p class="fine">這個品項不提供加料。</p>';
     if(selIce().hot&&s.hotNote)h+='<p class="fine">'+esc(s.hotNote)+'</p>';
